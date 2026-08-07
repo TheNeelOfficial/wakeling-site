@@ -12,6 +12,10 @@
   /* Straight from the app's dawn room. */
   --wall:#7C5A57; --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
+  /* The phone is drawn, not rendered: a flat body and one ink line, the way the
+     nightstand and the window frame in the room are drawn. No gradient — the
+     app's art has no specular highlights anywhere in it. */
+  --phone-body:#3B2C31; --phone-ink:#1B1316;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
 *{box-sizing:border-box}
@@ -56,28 +60,39 @@ a{color:inherit}
    thing scales as one object. Corner radius is 62pt on a 402pt-wide iPhone 17
    Pro — 15.4% of the width — which is why a fixed 34px radius looked wrong at
    every size but one. */
-.phone{--pw:clamp(215px,25vw,282px);--bez:calc(var(--pw) * .028);
+.phone{--pw:clamp(215px,25vw,282px);--bez:calc(var(--pw) * .030);
   position:relative;width:var(--pw);padding:var(--bez);
-  border-radius:calc(var(--pw) * .154);
-  background:linear-gradient(150deg,#5c524d,#241f1e 22%,#191515 60%,#4a413d);
-  box-shadow:0 2px 0 rgba(255,238,222,.10) inset,
-    0 30px 60px -12px rgba(0,0,0,.55), 0 10px 22px rgba(0,0,0,.3);
+  /* drop-shadow, not box-shadow: box-shadow traces the element's RECTANGLE and
+     would put a hard right-angled shadow behind a drawn, round-cornered
+     silhouette. drop-shadow follows the painted pixels, so it follows the ink. */
+  filter:drop-shadow(0 calc(var(--pw) * .07) calc(var(--pw) * .09) rgba(43,26,26,.45));
   transform:rotate(-1.2deg)}
-/* height:auto is the whole trick — the picture keeps its own ratio and the
-   frame follows it, so there is nothing for object-fit to crop. */
-.phone .screen{display:block;width:100%;height:auto;
-  border-radius:calc(var(--pw) * .126);background:var(--dark)}
 
-/* The side rails. Not decoration: a bare rounded rectangle reads as a picture
-   frame, and these are what make it read as a device. Left is the action
-   button and the volume pair (repeated with box-shadow), right is the power
-   button, which sits lower and is longer. */
-.phone::before,.phone::after{content:"";position:absolute;z-index:1;
-  width:calc(var(--pw) * .010);border-radius:99px;
-  background:linear-gradient(90deg,#332c29,#5c524d)}
-.phone::before{left:calc(var(--pw) * -.008);top:21%;height:3.6%;
-  box-shadow:0 calc(var(--pw) * .30) 0 #443b37, 0 calc(var(--pw) * .47) 0 #443b37}
-.phone::after{right:calc(var(--pw) * -.008);top:27%;height:7.4%}
+/* The drawn body, behind the screen. Sized to the padding box rather than given
+   its own dimensions, so it tracks the picture the same way the frame does. */
+.phone .ink{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.phone .ink .body{fill:var(--phone-body)}
+.phone .ink .grain,.phone .ink .line{fill:none}
+/* non-scaling-stroke because the 0..1 viewBox is stretched to a tall box: a
+   normal stroke would come out thin on the long sides and fat on the short
+   ones, which is the one thing a drawn line never does. It also means
+   stroke-width is in real pixels, hence the calc rather than a fraction. */
+.phone .ink .line,.phone .ink .keys path{fill:none;stroke:var(--phone-ink);
+  stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.phone .ink .line{stroke-width:calc(var(--pw) * .0105);stroke-opacity:.62}
+.phone .ink .keys path{stroke-width:calc(var(--pw) * .0135)}
+
+/* height:auto is the whole trick — the picture keeps its own ratio and the
+   frame follows it, so there is nothing for object-fit to crop.
+   Clipped by the SAME outline that draws the body, scaled to this smaller box,
+   so the screen's edge is drawn rather than machined. */
+.phone .screen{position:relative;z-index:1;display:block;width:100%;height:auto;
+  background:var(--dark);clip-path:url(#drawnScreen)}
+
+/* The grain every surface in the app carries, over the phone's body so it sits
+   in the same world as the room rather than on top of it. */
+.phone .ink .grain{fill:url(#drawnGrain);opacity:.16}
+/* Overrides the shared "fill:none" above — order matters, this rule is later. */
 
 /* Stacked, the phone competes with the headline for vertical space and wins on
    width alone — at 25vw it pushed the app's NAME below the fold. Here the
