@@ -35,12 +35,24 @@ a{color:inherit}
   background:url(art/grain.webp) repeat;background-size:calc(64 * var(--s)) calc(64 * var(--s))}
 
 /* ── THE STAGE ─────────────────────────────────────────────────────────── */
-.hero{position:relative;z-index:2;min-height:100svh;max-width:74rem;margin:0 auto;
-  padding:3rem 1.5rem 6rem;display:grid;grid-template-columns:auto 1fr;
-  gap:clamp(2rem,6vw,5rem);align-items:center}
+/* Both columns size to their CONTENT, and the pair is centred as one block.
+   With "auto 1fr" the text column was handed every spare pixel — 774px of it —
+   while the prose inside stopped at its own max-width of 496px. The remaining
+   278px could not be filled by anything, and sat against the right margin as a
+   466px void with only 188px on the left. Read as a lopsided page rather than a
+   generous one. Slack is now split evenly by the centring instead. */
+.hero{position:relative;z-index:2;min-height:100svh;max-width:78rem;margin:0 auto;
+  padding:2.5rem 1.5rem 4.75rem;display:grid;grid-template-columns:auto auto;
+  justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:center}
 @media(max-width:56rem){
-  .hero{grid-template-columns:1fr;justify-items:center;text-align:center;gap:2rem;
-    padding:2rem 1.25rem 7rem}
+  /* align-content, not align-items. With min-height:100svh and two auto rows,
+     the spare height was being handed to the ROWS, which then centred their
+     contents inside themselves — opening a 107px hole between the phone and the
+     headline that no rule mentioned and nothing could fill. Packing the rows
+     together and centring the group puts that space back at the edges where it
+     reads as margin. */
+  .hero{grid-template-columns:1fr;justify-items:center;text-align:center;
+    gap:1.5rem;padding:1.75rem 1.25rem 5rem;align-content:center}
 }
 
 /* ── THE PHONE ─────────────────────────────────────────────────────────────
@@ -56,7 +68,15 @@ a{color:inherit}
    thing scales as one object. Corner radius is 62pt on a 402pt-wide iPhone 17
    Pro — 15.4% of the width — which is why a fixed 34px radius looked wrong at
    every size but one. */
-.phone{--pw:clamp(215px,25vw,282px);--bez:calc(var(--pw) * .028);
+/* Sized by HEIGHT as well as width.
+   The binding constraint on this page is vertical: the phone is ~2.11 times as
+   tall as it is wide, so on a laptop the viewport runs out of height long
+   before it runs out of width, and the leftover width is exactly the emptiness
+   this layout was accused of. Taking the smaller of the two lets it grow to
+   whatever the viewport can actually show and stop there.
+   7.25rem is the hero's own vertical padding, which the phone has to share. */
+.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 7.25rem) / 2.11));
+  --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
   background:linear-gradient(150deg,#5c524d,#241f1e 22%,#191515 60%,#4a413d);
@@ -92,7 +112,12 @@ a{color:inherit}
    class, so source order is the only thing deciding it, and up in the .hero
    media query it silently lost. */
 @media(max-width:56rem){
-  .phone{--pw:min(clamp(190px,25vw,282px), 26svh)}
+  /* Constrained by its HEIGHT, expressed as a share of the viewport — the phone
+     is 2.11x as tall as it is wide, so a limit written in vw says nothing about
+     how much of the screen it will actually occupy. 25vw left it 190px wide and
+     marooned in the dead gap above; 60vw fills the width a phone screen has.
+     60svh keeps the headline below it above the fold on a short device. */
+  .phone{--pw:min(clamp(200px,60vw,300px),calc(60svh / 2.11))}
 }
 
 /* The app icon, above the name — the shape people will be looking for in the
@@ -107,13 +132,13 @@ a{color:inherit}
 h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
 .lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
-  margin:0 0 1rem;max-width:31rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+  margin:0 0 1rem;max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
-  max-width:31rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+  max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 @media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
 
 /* ── CTA ───────────────────────────────────────────────────────────────── */
-.cta{display:flex;gap:.7rem;flex-wrap:wrap;max-width:31rem}
+.cta{display:flex;gap:.7rem;flex-wrap:wrap;max-width:34rem}
 @media(max-width:56rem){.cta{justify-content:center}}
 .cta input{flex:1 1 13rem;min-width:11rem;padding:.75rem 1rem;border-radius:14px;
   border:2px solid rgba(255,244,232,.35);background:rgba(36,27,32,.5);color:var(--ink);
