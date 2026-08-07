@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support — Wakeling</title>
+<meta name="description" content="Support and contact for Wakeling.">
+<link rel="icon" href="icon.webp?v=2cdf70ea">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Straight from the app's dawn room. */
+  --wall:#7C5A57; --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
+  --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
+  --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);background:var(--wall);color:var(--ink);
+  -webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+/* ── THE ROOM ──────────────────────────────────────────────────────────
+   Wall, floor, skirting and the paper grain every surface in the app carries.
+   Nothing else: the room is a stage, not the subject. */
+.room{position:relative;min-height:100svh;overflow:hidden;background:var(--wall);
+  --s:calc(100svh / 640)}
+.wall{position:absolute;left:0;right:0;top:0;height:62%;
+  background:url(art/wall.webp) repeat;background-size:calc(120 * var(--s)) calc(180 * var(--s))}
+.skirt{position:absolute;left:0;right:0;top:62%;height:calc(100vw * 45 / 1125);
+  background:url(art/skirting.webp) no-repeat;background-size:100% 100%}
+.floor{position:absolute;left:0;right:0;top:calc(62% + (100vw * 45 / 1125));bottom:0;
+  background:url(art/floor.webp) repeat-y;background-size:100% auto}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.13;
+  background:url(art/grain.webp) repeat;background-size:calc(64 * var(--s)) calc(64 * var(--s))}
+
+/* ── THE STAGE ─────────────────────────────────────────────────────────── */
+.hero{position:relative;z-index:2;min-height:100svh;max-width:74rem;margin:0 auto;
+  padding:3rem 1.5rem 6rem;display:grid;grid-template-columns:auto 1fr;
+  gap:clamp(2rem,6vw,5rem);align-items:center}
+@media(max-width:56rem){
+  .hero{grid-template-columns:1fr;justify-items:center;text-align:center;gap:2rem;
+    padding:2rem 1.25rem 7rem}
+}
+
+/* ── THE PHONE ─────────────────────────────────────────────────────────────
+   The frame takes NO fixed aspect ratio. It is padding around an image left at
+   its natural height, so the outer silhouette is whatever the screenshot is —
+   the frame cannot disagree with the picture inside it. The previous version
+   set both independently and they drifted: a 19.5:9 frame around a 750x1290
+   capture cropped the clock off, and then matching the frame to the capture
+   left an iPhone-SE silhouette wearing a Dynamic Island, which is the shape
+   that read as wrong. The source is now a real 1206x2622 device capture.
+
+   Every proportion below is a fraction of the phone's own width, so the whole
+   thing scales as one object. Corner radius is 62pt on a 402pt-wide iPhone 17
+   Pro — 15.4% of the width — which is why a fixed 34px radius looked wrong at
+   every size but one. */
+.phone{--pw:clamp(215px,25vw,282px);--bez:calc(var(--pw) * .028);
+  position:relative;width:var(--pw);padding:var(--bez);
+  border-radius:calc(var(--pw) * .154);
+  background:linear-gradient(150deg,#5c524d,#241f1e 22%,#191515 60%,#4a413d);
+  box-shadow:0 2px 0 rgba(255,238,222,.10) inset,
+    0 30px 60px -12px rgba(0,0,0,.55), 0 10px 22px rgba(0,0,0,.3);
+  transform:rotate(-1.2deg)}
+/* height:auto is the whole trick — the picture keeps its own ratio and the
+   frame follows it, so there is nothing for object-fit to crop. */
+.phone .screen{display:block;width:100%;height:auto;
+  border-radius:calc(var(--pw) * .126);background:var(--dark)}
+
+/* The side rails. Not decoration: a bare rounded rectangle reads as a picture
+   frame, and these are what make it read as a device. Left is the action
+   button and the volume pair (repeated with box-shadow), right is the power
+   button, which sits lower and is longer. */
+.phone::before,.phone::after{content:"";position:absolute;z-index:1;
+  width:calc(var(--pw) * .010);border-radius:99px;
+  background:linear-gradient(90deg,#332c29,#5c524d)}
+.phone::before{left:calc(var(--pw) * -.008);top:21%;height:3.6%;
+  box-shadow:0 calc(var(--pw) * .30) 0 #443b37, 0 calc(var(--pw) * .47) 0 #443b37}
+.phone::after{right:calc(var(--pw) * -.008);top:27%;height:7.4%}
+
+/* Stacked, the phone competes with the headline for vertical space and wins on
+   width alone — at 25vw it pushed the app's NAME below the fold. Here the
+   binding constraint is height, so size it from that instead.
+
+   This block must stay BELOW the .phone rule above: both selectors are a single
+   class, so source order is the only thing deciding it, and up in the .hero
+   media query it silently lost. */
+@media(max-width:56rem){
+  .phone{--pw:min(clamp(190px,25vw,282px), 26svh)}
+}
+
+/* The app icon, above the name — the shape people will be looking for in the
+   App Store. Deliberately NOT a logo lockup: the h1 right below it is already
+   the wordmark, set in the app's own face, and a second one would just be the
+   same word twice. 22.5% is Apple's squircle radius as a fraction of the side,
+   so it reads as an app icon rather than a rounded picture. */
+.brand{width:clamp(58px,6.5vw,78px);height:auto;border-radius:22.5%;
+  margin:0 0 1.1rem;box-shadow:0 12px 26px rgba(0,0,0,.38)}
+@media(max-width:56rem){.brand{margin-left:auto;margin-right:auto}}
+
+h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-weight:700;
+  letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
+.lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
+  margin:0 0 1rem;max-width:31rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
+  max-width:31rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+@media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
+
+/* ── CTA ───────────────────────────────────────────────────────────────── */
+.cta{display:flex;gap:.7rem;flex-wrap:wrap;max-width:31rem}
+@media(max-width:56rem){.cta{justify-content:center}}
+.cta input{flex:1 1 13rem;min-width:11rem;padding:.75rem 1rem;border-radius:14px;
+  border:2px solid rgba(255,244,232,.35);background:rgba(36,27,32,.5);color:var(--ink);
+  font-family:var(--font);font-size:1.2rem}
+.cta input::placeholder{color:rgba(255,244,232,.45)}
+.cta input:focus{outline:none;border-color:var(--ink)}
+.cta button{padding:.75rem 1.3rem;min-height:50px;border:0;border-radius:14px;cursor:pointer;
+  font-family:var(--font);font-size:1.25rem;font-weight:700;background:var(--ink);color:var(--dark)}
+.cta button.alt{background:transparent;color:var(--ink);border:2px solid rgba(255,244,232,.4)}
+.cta button:active{transform:scale(.98)}
+.soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.done{display:none;font-size:1.3rem;color:var(--ink)}
+.sent .cta,.sent .soon{display:none}
+.sent .done{display:block}
+
+/* ── FOOT ──────────────────────────────────────────────────────────────── */
+.foot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:1.2rem 1.5rem;
+  display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;font-size:1.1rem;
+  color:var(--dim);text-shadow:0 2px 10px rgba(0,0,0,.4)}
+.foot a{text-decoration:none;border-bottom:1px solid rgba(255,244,232,.3)}
+
+/* ── DOC PAGES ─────────────────────────────────────────────────────────── */
+body.docpage{background:var(--paper);color:var(--dark)}
+.doc{max-width:44rem;margin:0 auto;padding:3rem 1.25rem 4rem;min-height:100svh}
+.doc h1{font-size:2.8rem;margin:0 0 .3rem;line-height:1.1}
+.doc h2{font-size:1.6rem;margin:2.2rem 0 .3rem}
+.doc p{color:#5B4A50;font-size:1.2rem;line-height:1.6;margin:0 0 .8rem}
+.doc .stamp{color:#9A8A8E;font-size:1.05rem;margin-bottom:2rem}
+.doc header{display:flex;align-items:center;gap:.7rem;margin-bottom:2.2rem}
+.doc header img{width:44px;height:44px;border-radius:11px}
+.doc header b{font-size:1.6rem}
+.doc nav{margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--rule);
+  display:flex;gap:1.3rem;flex-wrap:wrap;font-size:1.1rem}
+.doc nav a{color:#6B5A5E}
+
+@media(prefers-reduced-motion:reduce){.phone{transform:none}}
+</style>
+</head>
+<body class="docpage">
+<div class="doc"><header><img src="icon.webp?v=2cdf70ea" width="512" height="512" alt=""><b>Wakeling</b></header>
+<h1>Support</h1>
+<p>Email <a href="mailto:neelakanteswarp@gmail.com">neelakanteswarp@gmail.com</a> and a human will read it.</p>
+<h2>The alarm did not ring</h2>
+<p>This is the one that matters, so please do report it. The usual cause is the app
+being swiped out of the app switcher, which stops it running — leave Wakeling open in
+the background overnight. Also check notification permission, and that Focus or Do
+Not Disturb is not silencing it.</p>
+<h2>Testing your alarm</h2>
+<p>Settings → Alarm → <b>Test the alarm</b> rings a full alarm in ten seconds, so you
+can check it works without waiting until morning.</p>
+<h2>Cancelling Pro</h2>
+<p>Subscriptions are managed by Apple: Settings app → your name → Subscriptions.
+Cancelling takes effect at the end of the paid period. The free trial needs no card
+and there is nothing to cancel.</p>
+<h2>Turning off analytics</h2>
+<p>Settings → Privacy → Analytics turns off crash reports and usage counts together.</p>
+<nav><a href="index.html">Home</a><a href="privacy.html">Privacy</a>
+<a href="terms.html">Terms</a><a href="support.html">Support</a></nav>
+</div>
+</body>
+</html>
