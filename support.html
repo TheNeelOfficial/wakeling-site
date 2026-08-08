@@ -178,26 +178,48 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    the stacking order the absolutely-positioned room layers create.
 
    It costs nothing above the horizon, where the page is already dark. */
-.hero>div:last-child{position:relative;isolation:isolate}
-/* A BLURRED SHAPE, not a gradient.
+/* ── TEXT COLOURED FOR THE GROUND IT STANDS ON ──
 
-   The first attempt was a radial gradient painted as the column's background,
-   and it drew a visible rectangle: a radial fade inside a wide box cannot clear
-   all four sides at once — pick a radius that goes transparent before the left
-   and right edges and it is still opaque at the top and bottom, and the other
-   way round. The box edge showed against the moon.
+   The page is split: space above the horizon, moon floor below. Cream reads at
+   17:1 on the space and 3.65:1 on the moon, which is why the first attempt put
+   a dark blur behind the form — a patch that looked like a smudge on the
+   illustration.
 
-   A solid rounded rect pushed through a 40px blur has no such geometry. It is
-   soft on every side by construction, and reads as shadow in a night scene
-   rather than as a panel bolted to the illustration.
+   The honest fix is that the two halves need different ink. Below the horizon
+   the text goes near-black: measured against the floor's real range
+   (#7B777F to #88858C, it is a uniform texture) that holds 4.79-5.78:1, where
+   the space colour would have dropped to 4.24 on the darker patches.
 
-   isolation:isolate so z-index:-1 stays inside this column — without it the
-   negative index escapes and lands behind the room's floor layer, where it
-   does nothing at all. */
-.hero>div:last-child::before{content:"";position:absolute;z-index:-1;
-  inset:-1.2rem -2.4rem -1.6rem;border-radius:2.5rem;
-  background:rgba(13,18,37,.86);filter:blur(40px)}
-@media(max-width:56rem){.hero>div:last-child::before{inset:-.8rem -1.2rem}}
+   The button inverts with it. A cream button on a light grey floor is two pale
+   things touching; dark-on-moon is the same contrast the cream-on-space button
+   had above. */
+.signup{--onMoon:#0B0812;color:var(--onMoon)}
+@media(max-width:56rem){.signup{--onMoon:var(--ink)}
+  .signup .ask,.signup .soon{color:var(--dim)}
+  .signup .cta input[type=email]{background:rgba(36,27,32,.5);border-color:rgba(255,244,232,.35);color:var(--ink)}
+  .signup .cta input[type=email]::placeholder{color:rgba(255,244,232,.45)}
+  .signup .cta button{background:var(--ink);color:var(--dark)}
+  .signup .hint{color:#FFD9A8}}
+.signup .ask{color:rgba(11,8,18,.78)}
+.signup .picks label{color:var(--onMoon)}
+.signup .picks input{background-color:var(--onMoon)}
+.signup .picks label:hover{color:#000}
+.signup .glyph{background-color:var(--onMoon);opacity:.9}
+/* [type=email], not a bare input selector. The .cta input rule matches every input in the
+   form INCLUDING the two checkboxes, and at (0,3,1) it outranked the
+   .signup .picks input rule at (0,2,1) — so the tick boxes were being painted
+   with the email field's pale fill and vanished against the moon. The same
+   over-broad selector already had to be undone once, for min-width. */
+.signup .cta input[type=email]{background:rgba(255,252,247,.6);
+  border-color:rgba(11,8,18,.45);color:var(--onMoon);text-shadow:none}
+.signup .cta input[type=email]::placeholder{color:rgba(11,8,18,.52)}
+.signup .cta input[type=email]:focus{border-color:var(--onMoon);
+  background:rgba(255,252,247,.8)}
+.signup .cta button{background:var(--onMoon);color:var(--ink)}
+.signup .soon{color:rgba(11,8,18,.75);text-shadow:none}
+.signup .hint{color:#6B2D12}
+.signup .done{color:var(--onMoon)}
+.signup .picks input:focus-visible{outline-color:var(--onMoon)}
 .lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
   margin:0 0 1rem;max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;

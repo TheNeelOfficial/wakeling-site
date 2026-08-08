@@ -178,26 +178,48 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    the stacking order the absolutely-positioned room layers create.
 
    It costs nothing above the horizon, where the page is already dark. */
-.hero>div:last-child{position:relative;isolation:isolate}
-/* A BLURRED SHAPE, not a gradient.
+/* ── TEXT COLOURED FOR THE GROUND IT STANDS ON ──
 
-   The first attempt was a radial gradient painted as the column's background,
-   and it drew a visible rectangle: a radial fade inside a wide box cannot clear
-   all four sides at once — pick a radius that goes transparent before the left
-   and right edges and it is still opaque at the top and bottom, and the other
-   way round. The box edge showed against the moon.
+   The page is split: space above the horizon, moon floor below. Cream reads at
+   17:1 on the space and 3.65:1 on the moon, which is why the first attempt put
+   a dark blur behind the form — a patch that looked like a smudge on the
+   illustration.
 
-   A solid rounded rect pushed through a 40px blur has no such geometry. It is
-   soft on every side by construction, and reads as shadow in a night scene
-   rather than as a panel bolted to the illustration.
+   The honest fix is that the two halves need different ink. Below the horizon
+   the text goes near-black: measured against the floor's real range
+   (#7B777F to #88858C, it is a uniform texture) that holds 4.79-5.78:1, where
+   the space colour would have dropped to 4.24 on the darker patches.
 
-   isolation:isolate so z-index:-1 stays inside this column — without it the
-   negative index escapes and lands behind the room's floor layer, where it
-   does nothing at all. */
-.hero>div:last-child::before{content:"";position:absolute;z-index:-1;
-  inset:-1.2rem -2.4rem -1.6rem;border-radius:2.5rem;
-  background:rgba(13,18,37,.86);filter:blur(40px)}
-@media(max-width:56rem){.hero>div:last-child::before{inset:-.8rem -1.2rem}}
+   The button inverts with it. A cream button on a light grey floor is two pale
+   things touching; dark-on-moon is the same contrast the cream-on-space button
+   had above. */
+.signup{--onMoon:#0B0812;color:var(--onMoon)}
+@media(max-width:56rem){.signup{--onMoon:var(--ink)}
+  .signup .ask,.signup .soon{color:var(--dim)}
+  .signup .cta input[type=email]{background:rgba(36,27,32,.5);border-color:rgba(255,244,232,.35);color:var(--ink)}
+  .signup .cta input[type=email]::placeholder{color:rgba(255,244,232,.45)}
+  .signup .cta button{background:var(--ink);color:var(--dark)}
+  .signup .hint{color:#FFD9A8}}
+.signup .ask{color:rgba(11,8,18,.78)}
+.signup .picks label{color:var(--onMoon)}
+.signup .picks input{background-color:var(--onMoon)}
+.signup .picks label:hover{color:#000}
+.signup .glyph{background-color:var(--onMoon);opacity:.9}
+/* [type=email], not a bare input selector. The .cta input rule matches every input in the
+   form INCLUDING the two checkboxes, and at (0,3,1) it outranked the
+   .signup .picks input rule at (0,2,1) — so the tick boxes were being painted
+   with the email field's pale fill and vanished against the moon. The same
+   over-broad selector already had to be undone once, for min-width. */
+.signup .cta input[type=email]{background:rgba(255,252,247,.6);
+  border-color:rgba(11,8,18,.45);color:var(--onMoon);text-shadow:none}
+.signup .cta input[type=email]::placeholder{color:rgba(11,8,18,.52)}
+.signup .cta input[type=email]:focus{border-color:var(--onMoon);
+  background:rgba(255,252,247,.8)}
+.signup .cta button{background:var(--onMoon);color:var(--ink)}
+.signup .soon{color:rgba(11,8,18,.75);text-shadow:none}
+.signup .hint{color:#6B2D12}
+.signup .done{color:var(--onMoon)}
+.signup .picks input:focus-visible{outline-color:var(--onMoon)}
 .lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
   margin:0 0 1rem;max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
@@ -345,6 +367,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
       bed — so it stops without waking the whole house.</p>
       <p class="how">There is no snooze. Get up, finish a short mission, and a
       hand-drawn pet wakes up with you and grows a room you decorate.</p>
+      <div class="signup" id="signup">
       <form class="cta" id="notifyForm" novalidate>
         <input type="email" name="email" id="notifyEmail" required autocomplete="email"
                placeholder="you@example.com" aria-label="Email address"
@@ -363,6 +386,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
       <p class="soon" id="notifyNote">iOS first, Android later — one email the day
       yours is ready. Nothing else, and you can unsubscribe.</p>
       <p class="done">Thank you — we will email you when it is ready.</p>
+      </div>
     </div>
   </div>
 
@@ -410,15 +434,51 @@ body.docpage{background:var(--paper);color:var(--dark)}
   var VIDEO_HORIZON = 715 / 1174;
   var room = document.querySelector(".room");
   var vid = document.querySelector(".phone .screen");
+  var signup = document.getElementById("signup");
   if (!room || !vid) return;
 
-  function align(){
+  function horizonNow(){
+    var rr = room.getBoundingClientRect();
     var r = vid.getBoundingClientRect();
-    if (!r.height) return;                       // not laid out yet
-    var roomTop = room.getBoundingClientRect().top;
-    room.style.setProperty("--horizon", (r.top - roomTop + r.height * VIDEO_HORIZON) + "px");
+    return { ok: !!r.height, y: r.top - rr.top + r.height * VIDEO_HORIZON, w: r.width, top: rr.top };
+  }
+
+  function align(){
+    // Cleared first, or each pass adds to the last and walks the form down the
+    // page a little more on every resize.
+    if (signup) signup.style.marginTop = "";
+
+    var h = horizonNow();
+    if (!h.ok) return;                                    // not laid out yet
+
+    /* Put the signup group on the moon and leave the prose in space, because
+       the two halves are inked differently and a group straddling the line
+       would be unreadable across half of itself.
+
+       ITERATED, not calculated once. The hero column is vertically centred, so
+       adding N px of margin makes the column N taller and shifts its top up by
+       N/2 — the first pass landed 16px short of the horizon for exactly that
+       reason. Moving the form also moves the phone, so the horizon itself is
+       re-measured each round rather than held from before the change.
+
+       Each pass closes half the remaining gap, so the sequence is 16, 8, 4, 2,
+       1 — four passes left it 4px short. Ten is comfortably past the
+       half-pixel exit and costs nothing: the loop stops the moment it lands. */
+    if (signup && matchMedia("(min-width: 56.0625rem)").matches) {
+      var push = 0;
+      for (var i = 0; i < 10; i++) {
+        var cur = horizonNow();
+        var delta = cur.y - (signup.getBoundingClientRect().top - cur.top);
+        if (delta <= 0.5) break;
+        push += delta;
+        signup.style.marginTop = push + "px";
+      }
+      h = horizonNow();
+    }
+
+    room.style.setProperty("--horizon", h.y + "px");
     // The scale the room art is drawn at, so page and phone textures match.
-    room.style.setProperty("--roomW", r.width + "px");
+    room.style.setProperty("--roomW", h.w + "px");
   }
 
   align();
