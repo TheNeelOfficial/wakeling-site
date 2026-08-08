@@ -337,7 +337,12 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .hint:empty{display:none}
 .hint button{background:none;border:0;padding:0;font:inherit;color:var(--ink);
   text-decoration:underline;cursor:pointer;min-height:0}
-.soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+/* Centred, and broken into two lines by hand: the promise and the terms of it
+   are separate thoughts, and running them together made one long line that read
+   as small print. The break is a <br> rather than two paragraphs so they stay
+   one sentence to a screen reader. */
+.soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-align:center;
+  text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .done{display:none;font-size:1.3rem;color:var(--ink)}
 /* The hint goes too. It carries transient state — "Signing you up…" is set
    just before the request and never cleared on success, because success is a
@@ -405,7 +410,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
       </form>
       <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
       <p class="soon" id="notifyNote">iOS first, Android later — one email the day
-      yours is ready. Nothing else, and you can unsubscribe.</p>
+      yours is ready.<br>Nothing else, and you can unsubscribe.</p>
       <p class="done">Thank you — we will email you when it is ready.</p>
       </div>
     </div>
