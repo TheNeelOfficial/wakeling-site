@@ -281,6 +281,27 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   opacity:.85;-webkit-mask:center/contain no-repeat;mask:center/contain no-repeat}
 .glyph.ios{-webkit-mask-image:var(--markApple);mask-image:var(--markApple)}
 .glyph.android{-webkit-mask-image:var(--markDroid);mask-image:var(--markDroid)}
+/* ── ONE ROW FOR THE PLATFORMS AND THE ACTION, ON WIDE SCREENS ──
+
+   The form sits below the horizon and the moon strip is finite, so three
+   stacked rows spent height the layout does not have. Checkboxes and button
+   share a line instead: "pick your platform, then go" reads in the order it is
+   laid out.
+
+   The button still GROWS into the space left over rather than shrink-wrapping
+   its label — Mobbin's pattern is a CTA as wide as the field above it, and a
+   button sized to its text beside two checkboxes would read as the smaller of
+   the three things on the row rather than the one to press. It stays the only
+   filled element, which is what keeps it dominant at any width.
+
+   Stacked below 56rem, where full width is the stronger CTA and there is
+   vertical room for it. */
+@media(min-width:56.0625rem){
+  .cta{align-items:center}
+  .picks{flex:0 0 auto;margin:0}
+  .cta button{flex:1 1 16rem;margin-left:auto}
+}
+
 /* flex and min-width RESET, not decoration. The .cta input rule sets
    flex:1 1 13rem and min-width:11rem for the email field, and it matches these
    checkboxes too — min-width beats width, so each tick became an 11rem box
