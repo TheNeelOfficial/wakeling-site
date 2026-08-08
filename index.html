@@ -465,10 +465,15 @@ body.docpage{background:var(--paper);color:var(--dark)}
        1 — four passes left it 4px short. Ten is comfortably past the
        half-pixel exit and costs nothing: the loop stops the moment it lands. */
     if (signup && matchMedia("(min-width: 56.0625rem)").matches) {
+      /* Landing the group's TOP exactly on the horizon is not enough: the
+         email field's own top edge then touches the line, so it reads as
+         sitting in the space rather than on the moon. CLEARANCE drops it far
+         enough that the whole control is unambiguously on the grey. */
+      var CLEARANCE = 22;
       var push = 0;
       for (var i = 0; i < 10; i++) {
         var cur = horizonNow();
-        var delta = cur.y - (signup.getBoundingClientRect().top - cur.top);
+        var delta = cur.y + CLEARANCE - (signup.getBoundingClientRect().top - cur.top);
         if (delta <= 0.5) break;
         push += delta;
         signup.style.marginTop = push + "px";
