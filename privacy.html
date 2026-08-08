@@ -200,8 +200,16 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   .signup .cta input[type=email]::placeholder{color:rgba(255,244,232,.45)}
   .signup .cta button{background:var(--ink);color:var(--dark)}
   .signup .hint{color:#FFD9A8}}
-.signup .ask{color:rgba(11,8,18,.78)}
-.signup .picks label{color:var(--onMoon)}
+/* Bold on the moon, and only on the labels.
+   Gaegu is a thin handwriting face and the moon floor is a busy texture — at
+   regular weight the strokes compete with the craters, which is a legibility
+   problem separate from contrast (that already measures 4.8-5.8:1).
+   Tested against the alternative of simply darkening the text: near-black at
+   78% is already dark, so opacity moved almost nothing and weight moved a lot.
+   The NOTE stays regular. It is fine print, and bold fine print reads as
+   shouting a disclaimer — the one line on the page that must not. */
+.signup .ask{color:rgba(11,8,18,.85);font-weight:700}
+.signup .picks label{color:var(--onMoon);font-weight:700}
 .signup .picks input{background-color:var(--onMoon)}
 .signup .picks label:hover{color:#000}
 .signup .glyph{background-color:var(--onMoon);opacity:.9}
