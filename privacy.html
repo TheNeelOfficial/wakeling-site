@@ -23,14 +23,39 @@ a{color:inherit}
 /* ── THE ROOM ──────────────────────────────────────────────────────────
    Wall, floor, skirting and the paper grain every surface in the app carries.
    Nothing else: the room is a stage, not the subject. */
+/* ── THE HORIZON IS SET FROM THE PHONE, NOT FROM A PERCENTAGE ──
+
+   The page and the video are the same room, so the line where space meets moon
+   has to be at the same height in both or the phone looks pasted on. It cannot
+   be a fixed percentage: the phone's size is clamped against both viewport
+   width and height, so where its horizon lands moves independently of the
+   page's. 62% happened to be close at one window size and wrong at every other.
+
+   So the script below measures the video's rendered box and writes the answer
+   here. This value is the fallback for the moment before that runs and for no
+   JS at all — close enough that nothing jumps. */
+/* --roomW is the width the room art is drawn at, and it is set from the VIDEO,
+   not from the viewport. The art is authored 1125px wide for one phone screen,
+   so drawing it at the video's rendered width makes a crater on the page and a
+   crater in the phone the same size — which is what "seamless" actually
+   requires. Sized to the viewport instead, the page drew the same room about
+   five times more zoomed in: the horizon matched to the pixel and the textures
+   still did not meet. */
 .room{position:relative;min-height:100svh;overflow:hidden;background:var(--wall);
-  --s:calc(100svh / 640)}
-.wall{position:absolute;left:0;right:0;top:0;height:62%;
-  background:url(art/wall.webp) repeat;background-size:calc(120 * var(--s)) calc(180 * var(--s))}
-.skirt{position:absolute;left:0;right:0;top:62%;height:calc(100vw * 45 / 1125);
-  background:url(art/skirting.webp) no-repeat;background-size:100% 100%}
-.floor{position:absolute;left:0;right:0;top:calc(62% + (100vw * 45 / 1125));bottom:0;
-  background:url(art/floor.webp) repeat-y;background-size:100% auto}
+  --s:calc(100svh / 640);--horizon:60.9%;--roomW:305px;
+  --skirtH:calc(var(--roomW) * 45 / 1125)}
+.wall{position:absolute;left:0;right:0;top:0;height:var(--horizon);
+  background:url(art/moon-wall.webp) repeat;
+  background-size:calc(var(--roomW) * 600 / 1125) auto}
+/* The rocky band straddles the horizon rather than sitting under it. Its own
+   art turns from space to moon 53.3% of the way down (row 24 of 45, measured),
+   so lifting it by that much puts ITS grey exactly on the horizon — which is
+   the line the video's grey has to meet. */
+.skirt{position:absolute;left:0;right:0;height:var(--skirtH);
+  top:calc(var(--horizon) - (var(--skirtH) * 0.533));
+  background:url(art/moon-skirting.webp) repeat-x;background-size:var(--roomW) 100%}
+.floor{position:absolute;left:0;right:0;top:var(--horizon);bottom:0;
+  background:url(art/moon-floor.webp) repeat;background-size:var(--roomW) auto}
 .grain{position:absolute;inset:0;pointer-events:none;opacity:.13;
   background:url(art/grain.webp) repeat;background-size:calc(64 * var(--s)) calc(64 * var(--s))}
 
@@ -131,6 +156,42 @@ a{color:inherit}
 
 h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
+/* ── A SHADOW UNDER THE WORDS ──
+
+   The moon floor is #817E85, which is far too light to read cream text on: the
+   supporting line measures 2.39:1 against it and even full-strength ink only
+   reaches 3.65:1. AA wants 4.5:1.
+
+   Darkening the floor is not available — it is the SAME floor as the video's,
+   and the two matching is the entire point of the horizon work above.
+
+   So the ground goes behind the text instead: a soft radial wash of the space
+   colour, fading out well before its edges so it reads as shading in a night
+   scene rather than a panel bolted onto the illustration. Painted as the
+   column's own background, which needs no z-index and so cannot get tangled in
+   the stacking order the absolutely-positioned room layers create.
+
+   It costs nothing above the horizon, where the page is already dark. */
+.hero>div:last-child{position:relative;isolation:isolate}
+/* A BLURRED SHAPE, not a gradient.
+
+   The first attempt was a radial gradient painted as the column's background,
+   and it drew a visible rectangle: a radial fade inside a wide box cannot clear
+   all four sides at once — pick a radius that goes transparent before the left
+   and right edges and it is still opaque at the top and bottom, and the other
+   way round. The box edge showed against the moon.
+
+   A solid rounded rect pushed through a 40px blur has no such geometry. It is
+   soft on every side by construction, and reads as shadow in a night scene
+   rather than as a panel bolted to the illustration.
+
+   isolation:isolate so z-index:-1 stays inside this column — without it the
+   negative index escapes and lands behind the room's floor layer, where it
+   does nothing at all. */
+.hero>div:last-child::before{content:"";position:absolute;z-index:-1;
+  inset:-1.2rem -2.4rem -1.6rem;border-radius:2.5rem;
+  background:rgba(13,18,37,.86);filter:blur(40px)}
+@media(max-width:56rem){.hero>div:last-child::before{inset:-.8rem -1.2rem}}
 .lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
   margin:0 0 1rem;max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
