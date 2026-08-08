@@ -194,23 +194,7 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    things touching; dark-on-moon is the same contrast the cream-on-space button
    had above. */
 .signup{--onMoon:#0B0812;color:var(--onMoon)}
-/* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
-   Stacked, the illustration sits at the top and the whole text column falls
-   below the horizon — measured on a 393x852 viewport, the horizon lands at
-   329px and the lede starts at 615. So the moon ink is not an exception here,
-   it is the rule, and the earlier override that forced this group back to
-   cream was written for a layout that does not exist: it assumed the form
-   would be above the line as it is on a wide screen, and left the entire
-   column at 2.4-3.6:1 on grey.
 
-   The prose takes it too — including the wordmark, which is dark on a phone
-   and cream on a desktop. That is not an inconsistency to fix: the page is one
-   room, and text takes the ink its ground needs. Same principle either way. */
-@media(max-width:56rem){
-  .lockup h1{color:#0B0812;text-shadow:none}
-  .lede{color:#0B0812;text-shadow:none}
-  .how{color:#0B0812;text-shadow:none}
-}
 /* NOTHING ON THE MOON IS TRANSLUCENT, AND THAT IS FORCED.
 
    Dark ink on this floor has no headroom: against its darkest 5% (#7B777F)
@@ -255,6 +239,24 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
   max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 @media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
+/* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
+   Stacked, the illustration sits at the top and the whole text column falls
+   below the horizon — measured on a 393x852 viewport, the horizon lands at
+   329px and the lede starts at 615. So the moon ink is not an exception here,
+   it is the rule, and the earlier override that forced this group back to
+   cream was written for a layout that does not exist: it assumed the form
+   would be above the line as it is on a wide screen, and left the entire
+   column at 2.4-3.6:1 on grey.
+
+   The prose takes it too — including the wordmark, which is dark on a phone
+   and cream on a desktop. That is not an inconsistency to fix: the page is one
+   room, and text takes the ink its ground needs. Same principle either way. */
+@media(max-width:56rem){
+  .lockup h1{color:#0B0812;text-shadow:none}
+  .lede{color:#0B0812;text-shadow:none}
+  .how{color:#0B0812;text-shadow:none}
+}
+
 
 /* ── CTA ───────────────────────────────────────────────────────────────── */
 .cta{display:flex;gap:.7rem;flex-wrap:wrap;max-width:34rem}
