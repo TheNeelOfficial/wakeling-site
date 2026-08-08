@@ -76,8 +76,13 @@ a{color:inherit}
      headline that no rule mentioned and nothing could fill. Packing the rows
      together and centring the group puts that space back at the edges where it
      reads as margin. */
+  /* The gap is the breathing room between the phone and the wordmark, and
+     1.5rem was too tight — the lockup read as attached to the bottom of the
+     device rather than as the start of the page's own content. Deliberate
+     space, unlike the accidental 107px hole described above: that one came
+     from spare height leaking into the rows, this one is asked for. */
   .hero{grid-template-columns:1fr;justify-items:center;text-align:center;
-    gap:1.5rem;padding:1.75rem 1.25rem 5rem;align-content:center}
+    gap:3rem;padding:1.75rem 1.25rem 5rem;align-content:center}
 }
 
 /* ── THE PHONE ─────────────────────────────────────────────────────────────
