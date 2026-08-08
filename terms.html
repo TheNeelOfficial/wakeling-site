@@ -174,7 +174,12 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-wei
   text-decoration:underline;cursor:pointer;min-height:0}
 .soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .done{display:none;font-size:1.3rem;color:var(--ink)}
-.sent .cta,.sent .soon{display:none}
+/* The hint goes too. It carries transient state — "Signing you up…" is set
+   just before the request and never cleared on success, because success is a
+   different element appearing. Without this the thank-you renders with
+   "Signing you up…" still sitting above it, which is what the live page did
+   the first time a real address went through it. */
+.sent .cta,.sent .soon,.sent .hint{display:none}
 .sent .done{display:block}
 
 /* ── FOOT ──────────────────────────────────────────────────────────────── */
