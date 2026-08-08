@@ -150,11 +150,17 @@ a{color:inherit}
    the wordmark, set in the app's own face, and a second one would just be the
    same word twice. 22.5% is Apple's squircle radius as a fraction of the side,
    so it reads as an app icon rather than a rounded picture. */
+/* Icon and wordmark as one lockup, side by side.
+   Baseline-ish rather than centred: the name is a tall display face and
+   centring it against a square icon left the icon looking like it had slipped
+   down. align-items:center on a .95 line-height reads level. */
+.lockup{display:flex;align-items:center;gap:clamp(.7rem,1.4vw,1.1rem);
+  margin:0 0 .5rem}
+@media(max-width:56rem){.lockup{justify-content:center}}
 .brand{width:clamp(58px,6.5vw,78px);height:auto;border-radius:22.5%;
-  margin:0 0 1.1rem;box-shadow:0 12px 26px rgba(0,0,0,.38)}
-@media(max-width:56rem){.brand{margin-left:auto;margin-right:auto}}
+  margin:0;flex:0 0 auto;box-shadow:0 12px 26px rgba(0,0,0,.38)}
 
-h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-weight:700;
+h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
 /* ── A SHADOW UNDER THE WORDS ──
 
