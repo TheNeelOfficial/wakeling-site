@@ -572,7 +572,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
 
   var TYPOS = {"gmial.com":"gmail.com","gmai.com":"gmail.com","gmail.co":"gmail.com","gmil.com":"gmail.com","gnail.com":"gmail.com","hotmial.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.co":"hotmail.com","outlok.com":"outlook.com","outloo.com":"outlook.com","yahoo.co":"yahoo.com","yaho.com":"yahoo.com","icloud.co":"icloud.com","iclould.com":"icloud.com"};
   var BURNERS = ["mailinator.com","guerrillamail.com","10minutemail.com","tempmail.com","throwawaymail.com","yopmail.com","trashmail.com","sharklasers.com"];
-  var SUPPORT_EMAIL = "devroolabs@gmail.com";
+  var CONTACT_EMAIL = "hello@wakeling.app";
   var SIGNUP_ENDPOINT = "https://wakeling-signup.wakeling-signup.workers.dev";
 
   function say(html){ hint.innerHTML = html; }
@@ -645,7 +645,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
 
     if (!SIGNUP_ENDPOINT) {
       say("Signups are not open yet. Please email " +
-          "<a href='mailto:" + SUPPORT_EMAIL + "'>" + SUPPORT_EMAIL + "</a> and we will add you by hand.");
+          "<a href='mailto:" + CONTACT_EMAIL + "'>" + CONTACT_EMAIL + "</a> and we will add you by hand.");
       return;
     }
 
@@ -660,11 +660,34 @@ body.docpage{background:var(--paper);color:var(--dark)}
         try { localStorage.setItem("wakeling.signup", String(Date.now())); } catch (e) {}
         document.getElementById("hero").classList.add("sent");
       })
-      .catch(function(){
+      .catch(function(err){
         busy = false;
         button.disabled = false;
-        say("That did not go through. Please try again, or email " +
-            "<a href='mailto:" + SUPPORT_EMAIL + "'>" + SUPPORT_EMAIL + "</a>.");
+        /* One message per CAUSE, not one message for everything.
+
+           "That did not go through" was shown for a rate limit, a missing
+           server key, an upstream fault and a dead network alike — which is
+           exactly as much as we learned when somebody reported seeing it: the
+           endpoint was healthy by the time it could be checked, and the message
+           had kept no record of which of the four it had been.
+
+           The reason is also logged, because the person reading the console is
+           us and the person reading the sentence is not. */
+        var mailto = "<a href='mailto:" + CONTACT_EMAIL + "'>" + CONTACT_EMAIL + "</a>";
+        var reason = (err && err.message) || "unknown";
+        console.error("signup failed:", reason);
+        if (reason === "http 429") {
+          say("That is a lot of signups from one place. Give it an hour, or email " + mailto + ".");
+        } else if (reason === "http 500") {
+          say("Signups are not switched on at our end yet. Please email " + mailto +
+              " and we will add you by hand.");
+        } else if (reason.indexOf("http") === 0) {
+          say("Our end had a problem. Please try again in a moment, or email " + mailto + ".");
+        } else {
+          // AbortError, a dead network, or an extension blocking the request.
+          say("We could not reach the signup service — an ad blocker will do this. " +
+              "Please try again, or email " + mailto + ".");
+        }
       });
   }
 
