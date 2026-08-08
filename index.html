@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wakeling — the alarm that goes quiet when you get up</title>
 <meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It rings at full volume while you are in bed and goes quiet the moment you get up.">
-<link rel="icon" href="icon.webp?v=e1ed1905">
+<link rel="icon" href="icon.webp?v=e1ed1905"><link rel="apple-touch-icon" href="notification-icon.png?v=7ca90ccc">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -216,21 +216,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
       bed — so it stops without waking the whole house.</p>
       <p class="how">There is no snooze. Get up, finish a short mission, and a
       hand-drawn pet wakes up with you and grows a room you decorate.</p>
-      <form class="cta" id="notifyForm" novalidate>
-        <input type="email" name="email" id="notifyEmail" required autocomplete="email"
-               placeholder="you@example.com" aria-label="Email address"
-               aria-describedby="notifyNote">
-        <input type="text" name="hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <div class="picks" role="group" aria-label="Which release do you want to hear about?">
-          <label><input type="checkbox" name="ios" checked> iOS</label>
-          <label><input type="checkbox" name="android"> Android</label>
-        </div>
-        <button type="submit">Tell me when it is out</button>
-      </form>
-      <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
-      <p class="soon" id="notifyNote">One email when your platform is out. Nothing
-      else, and you can unsubscribe.</p>
-      <p class="done">Thank you — we will email you when it is ready.</p>
+      <p class="soon">Coming to iOS first. Android after.</p>
     </div>
   </div>
 
@@ -240,7 +226,6 @@ body.docpage{background:var(--paper);color:var(--dark)}
     <a href="support.html">Support</a>
   </nav>
 </div>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
 /* ── THE WAITLIST ──
 
@@ -268,11 +253,11 @@ body.docpage{background:var(--paper);color:var(--dark)}
   var button = form.querySelector("button[type=submit]");
   var opened = Date.now();
   var busy = false;
-  var ready = false;
 
   var TYPOS = {"gmial.com":"gmail.com","gmai.com":"gmail.com","gmail.co":"gmail.com","gmil.com":"gmail.com","gnail.com":"gmail.com","hotmial.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.co":"hotmail.com","outlok.com":"outlook.com","outloo.com":"outlook.com","yahoo.co":"yahoo.com","yaho.com":"yahoo.com","icloud.co":"icloud.com","iclould.com":"icloud.com"};
   var BURNERS = ["mailinator.com","guerrillamail.com","10minutemail.com","tempmail.com","throwawaymail.com","yopmail.com","trashmail.com","sharklasers.com"];
   var SUPPORT_EMAIL = "devroolabs@gmail.com";
+  var SIGNUP_ENDPOINT = "";
 
   function say(html){ hint.innerHTML = html; }
 
@@ -342,9 +327,9 @@ body.docpage{background:var(--paper);color:var(--dark)}
       }
     } catch (e) { /* Private mode denies storage. Not a reason to refuse them. */ }
 
-    if (!window.OneSignal || !window.OneSignalDeferred || !ready) {
-      say("We could not reach the signup service — an ad blocker will do this. " +
-          "Please email <a href='mailto:" + SUPPORT_EMAIL + "'>" + SUPPORT_EMAIL + "</a> and we will add you by hand.");
+    if (!SIGNUP_ENDPOINT) {
+      say("Signups are not open yet. Please email " +
+          "<a href='mailto:" + SUPPORT_EMAIL + "'>" + SUPPORT_EMAIL + "</a> and we will add you by hand.");
       return;
     }
 
@@ -367,58 +352,63 @@ body.docpage{background:var(--paper);color:var(--dark)}
       });
   }
 
-  /* THE ONE PLACE THE BACKEND WOULD CHANGE.
+  /* THE ONLY THING THAT TALKS TO THE OUTSIDE WORLD.
 
-     Everything above is validation and interface. If the public-id route ever
-     has to become a server — for Identity Verification, a real rate limit, or a
-     captcha that is actually verified — this function is what gets swapped for
-     a fetch to it, and nothing else on the page moves. */
+     Everything above is validation and interface; this is the network. It was
+     written as a single function precisely so the backend could be swapped
+     without touching the page, and that is exactly what happened — it used to
+     push onto the OneSignal SDK's callback queue.
+
+     The endpoint holds the REST key and creates the email subscription with
+     two tags, wants_ios and wants_android. Two flags, never one 'platform'
+     field: somebody who ticks Android months after iOS must be ADDED to the
+     second list, not moved off the first, and a single field would overwrite
+     and silently un-enrol them from the launch they originally asked about. */
   function subscribe(email, wantsIos, wantsAndroid){
+    var done = false;
     return new Promise(function(resolve, reject){
-      window.OneSignalDeferred.push(function(OneSignal){
-        /* login BEFORE addEmail, and with the address as the identity.
+      /* An explicit deadline, because fetch has none.
 
-           Without it every browser is its own anonymous user, so one person
-           signing up on their phone and then their laptop becomes two records
-           with the same address — and the tags land on whichever one, meaning a
-           later "also Android" tick can go to a different record than the iOS
-           one did. Keyed on the address, both visits are the same person and
-           the two flags accumulate on one subscription. */
-        OneSignal.login(email.toLowerCase())
-          .then(function(){ return OneSignal.User.addEmail(email); })
-          .then(function(){
-            /* Two flags, never one 'platform' field. Somebody who ticks Android
-               months after iOS must be ADDED to the second list, not moved off
-               the first — a single field would overwrite and silently
-               un-enrol them from the launch they originally asked about. */
-            return OneSignal.User.addTags({
-              wants_ios: wantsIos ? "true" : "false",
-              wants_android: wantsAndroid ? "true" : "false",
-              source: "landing",
-            });
-          })
-          .then(resolve, reject);
-      });
-      // The SDK queue never rejects on its own if the script is wedged.
-      setTimeout(function(){ reject(new Error("timeout")); }, 10000);
+         A request that never settles leaves the button disabled and the hint
+         reading "Signing you up…" for ever, which is the silent failure this
+         whole form is built to avoid. AbortController so the request is
+         actually cancelled rather than left in flight to resolve later and
+         race the rejection. */
+      var ctl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      var timer = setTimeout(function(){
+        if (done) return;
+        done = true;
+        if (ctl) ctl.abort();
+        reject(new Error("timeout"));
+      }, 10000);
+
+      fetch(SIGNUP_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          wants_ios: wantsIos,
+          wants_android: wantsAndroid,
+          source: "landing",
+        }),
+        signal: ctl ? ctl.signal : undefined,
+      })
+        .then(function(res){
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          /* Status is checked. fetch resolves happily on 4xx and 5xx, so
+             "then means success" would show thanks for a rejected address. */
+          if (res.ok) resolve(); else reject(new Error("http " + res.status));
+        })
+        .catch(function(e){
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          reject(e);
+        });
     });
   }
-
-  /* 'ready' is set only when init RESOLVES, and the difference matters.
-
-     The obvious guard is "is window.OneSignal there", and it is not enough:
-     when the OneSignal app has no Web platform configured, their script loads
-     and defines window.OneSignal, then throws "App not configured for web push"
-     and never drains this queue. Every check on presence passes, the callback
-     never runs, and the only thing that eventually notices is the timeout in
-     subscribe(). That exact state was hit the first time this form was driven
-     in a browser, so the flag exists because of it and not in anticipation. */
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.OneSignalDeferred.push(function(OneSignal){
-    OneSignal.init({ appId: "a4de19ad-11ea-479d-a7b3-1e1381a9073e", allowLocalhostAsSecureOrigin: true })
-      .then(function(){ ready = true; })
-      .catch(function(){ ready = false; });
-  });
 
   form.addEventListener("submit", function(e){ e.preventDefault(); submit(); });
 })();
