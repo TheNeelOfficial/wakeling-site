@@ -677,28 +677,30 @@ body.docpage{background:var(--paper);color:var(--dark)}
       .catch(function(err){
         busy = false;
         button.disabled = false;
-        /* One message per CAUSE, not one message for everything.
+        /* ONE sentence for anything the server said.
 
-           "That did not go through" was shown for a rate limit, a missing
-           server key, an upstream fault and a dead network alike — which is
-           exactly as much as we learned when somebody reported seeing it: the
-           endpoint was healthy by the time it could be checked, and the message
-           had kept no record of which of the four it had been.
+           Everything in this file is served as page source, this comment
+           included, so it describes the rule rather than the states it hides.
+           The reasoning lives in docs/waitlist.md, which is not public.
 
-           The reason is also logged, because the person reading the console is
-           us and the person reading the sentence is not. */
+           Naming a cause helps whoever is probing the endpoint more than it
+           helps the person who typed their address. The cause is still logged
+           to the console here, and the Worker logs its own side; the sentence a
+           stranger reads was never where the debugging happened.
+
+           The unreachable branch stays separate because it is NOT a server
+           response — the request never arrived — and because "try again" is
+           useless advice to somebody whose ad blocker will eat every attempt.
+
+           The checks above still say exactly what is wrong with an address or a
+           missing platform tick. That is the person's own input, and telling
+           them is the whole job of a form. */
         var mailto = "<a href='mailto:" + CONTACT_EMAIL + "'>" + CONTACT_EMAIL + "</a>";
         var reason = (err && err.message) || "unknown";
         console.error("signup failed:", reason);
-        if (reason === "http 429") {
-          say("That is a lot of signups from one place. Give it an hour, or email " + mailto + ".");
-        } else if (reason === "http 500") {
-          say("Signups are not switched on at our end yet. Please email " + mailto +
-              " and we will add you by hand.");
-        } else if (reason.indexOf("http") === 0) {
-          say("Our end had a problem. Please try again in a moment, or email " + mailto + ".");
+        if (reason.indexOf("http") === 0) {
+          say("That did not go through. Please try again in a moment, or email " + mailto + ".");
         } else {
-          // AbortError, a dead network, or an extension blocking the request.
           say("We could not reach the signup service — an ad blocker will do this. " +
               "Please try again, or email " + mailto + ".");
         }
