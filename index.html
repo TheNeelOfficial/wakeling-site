@@ -216,7 +216,21 @@ body.docpage{background:var(--paper);color:var(--dark)}
       bed — so it stops without waking the whole house.</p>
       <p class="how">There is no snooze. Get up, finish a short mission, and a
       hand-drawn pet wakes up with you and grows a room you decorate.</p>
-      <p class="soon">Coming to iOS first. Android after.</p>
+      <form class="cta" id="notifyForm" novalidate>
+        <input type="email" name="email" id="notifyEmail" required autocomplete="email"
+               placeholder="you@example.com" aria-label="Email address"
+               aria-describedby="notifyNote">
+        <input type="text" name="hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="picks" role="group" aria-label="Which release do you want to hear about?">
+          <label><input type="checkbox" name="ios" checked> iOS</label>
+          <label><input type="checkbox" name="android"> Android</label>
+        </div>
+        <button type="submit">Tell me when it is out</button>
+      </form>
+      <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
+      <p class="soon" id="notifyNote">One email when your platform is out. Nothing
+      else, and you can unsubscribe.</p>
+      <p class="done">Thank you — we will email you when it is ready.</p>
     </div>
   </div>
 
@@ -257,7 +271,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
   var TYPOS = {"gmial.com":"gmail.com","gmai.com":"gmail.com","gmail.co":"gmail.com","gmil.com":"gmail.com","gnail.com":"gmail.com","hotmial.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.co":"hotmail.com","outlok.com":"outlook.com","outloo.com":"outlook.com","yahoo.co":"yahoo.com","yaho.com":"yahoo.com","icloud.co":"icloud.com","iclould.com":"icloud.com"};
   var BURNERS = ["mailinator.com","guerrillamail.com","10minutemail.com","tempmail.com","throwawaymail.com","yopmail.com","trashmail.com","sharklasers.com"];
   var SUPPORT_EMAIL = "devroolabs@gmail.com";
-  var SIGNUP_ENDPOINT = "";
+  var SIGNUP_ENDPOINT = "https://wakeling-signup.wakeling-signup.workers.dev";
 
   function say(html){ hint.innerHTML = html; }
 
