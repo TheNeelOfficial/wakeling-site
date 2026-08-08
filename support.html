@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Support — Wakeling</title>
 <meta name="description" content="Support and contact for Wakeling.">
-<link rel="icon" href="icon.webp?v=2cdf70ea">
+<link rel="icon" href="icon.webp?v=e1ed1905">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -149,6 +149,29 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-wei
   font-family:var(--font);font-size:1.25rem;font-weight:700;background:var(--ink);color:var(--dark)}
 .cta button.alt{background:transparent;color:var(--ink);border:2px solid rgba(255,244,232,.4)}
 .cta button:active{transform:scale(.98)}
+.cta button[disabled]{opacity:.55;cursor:default;transform:none}
+/* The honeypot. Off-screen rather than display:none — the cruder bots skip
+   anything hidden that way, and skipping it is exactly what we want them not
+   to do. Never focusable, never announced. */
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+/* The platform picks own a full row so the email field keeps its width on a
+   phone; wrapping them inline pushed the input down to about six characters. */
+.picks{flex:1 0 100%;display:flex;gap:1.1rem;align-items:center;margin:-.15rem 0 .1rem}
+@media(max-width:56rem){.picks{justify-content:center}}
+.picks label{display:flex;align-items:center;gap:.45rem;font-size:1.05rem;
+  color:var(--ink);cursor:pointer;min-height:44px}
+/* flex and min-width RESET, not decoration. The .cta input rule sets
+   flex:1 1 13rem and min-width:11rem for the email field, and it matches these
+   checkboxes too — min-width beats width, so each tick became an 11rem box
+   with its label stranded a hundred points away. */
+.picks input{flex:0 0 auto;min-width:0;width:1.15rem;height:1.15rem;
+  accent-color:var(--ink);cursor:pointer;padding:0;border:0;background:none}
+/* Says why a submission did not go through. Reserves no space when empty, so
+   the layout does not jump the first time it has something to say. */
+.hint{margin:.6rem 0 0;font-size:1rem;color:#FFD9A8;min-height:0}
+.hint:empty{display:none}
+.hint button{background:none;border:0;padding:0;font:inherit;color:var(--ink);
+  text-decoration:underline;cursor:pointer;min-height:0}
 .soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .done{display:none;font-size:1.3rem;color:var(--ink)}
 .sent .cta,.sent .soon{display:none}
@@ -176,7 +199,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
 </style>
 </head>
 <body class="docpage">
-<div class="doc"><header><img src="icon.webp?v=2cdf70ea" width="512" height="512" alt=""><b>Wakeling</b></header>
+<div class="doc"><header><img src="icon.webp?v=e1ed1905" width="512" height="512" alt=""><b>Wakeling</b></header>
 <h1>Support</h1>
 <p>Email <a href="mailto:devroolabs@gmail.com">devroolabs@gmail.com</a> and a human will read it.</p>
 <h2>The alarm did not ring</h2>

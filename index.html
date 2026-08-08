@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wakeling — the alarm that goes quiet when you get up</title>
 <meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It rings at full volume while you are in bed and goes quiet the moment you get up.">
-<link rel="icon" href="icon.webp?v=2cdf70ea">
+<link rel="icon" href="icon.webp?v=e1ed1905">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -149,6 +149,29 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0 0 .5rem;font-wei
   font-family:var(--font);font-size:1.25rem;font-weight:700;background:var(--ink);color:var(--dark)}
 .cta button.alt{background:transparent;color:var(--ink);border:2px solid rgba(255,244,232,.4)}
 .cta button:active{transform:scale(.98)}
+.cta button[disabled]{opacity:.55;cursor:default;transform:none}
+/* The honeypot. Off-screen rather than display:none — the cruder bots skip
+   anything hidden that way, and skipping it is exactly what we want them not
+   to do. Never focusable, never announced. */
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+/* The platform picks own a full row so the email field keeps its width on a
+   phone; wrapping them inline pushed the input down to about six characters. */
+.picks{flex:1 0 100%;display:flex;gap:1.1rem;align-items:center;margin:-.15rem 0 .1rem}
+@media(max-width:56rem){.picks{justify-content:center}}
+.picks label{display:flex;align-items:center;gap:.45rem;font-size:1.05rem;
+  color:var(--ink);cursor:pointer;min-height:44px}
+/* flex and min-width RESET, not decoration. The .cta input rule sets
+   flex:1 1 13rem and min-width:11rem for the email field, and it matches these
+   checkboxes too — min-width beats width, so each tick became an 11rem box
+   with its label stranded a hundred points away. */
+.picks input{flex:0 0 auto;min-width:0;width:1.15rem;height:1.15rem;
+  accent-color:var(--ink);cursor:pointer;padding:0;border:0;background:none}
+/* Says why a submission did not go through. Reserves no space when empty, so
+   the layout does not jump the first time it has something to say. */
+.hint{margin:.6rem 0 0;font-size:1rem;color:#FFD9A8;min-height:0}
+.hint:empty{display:none}
+.hint button{background:none;border:0;padding:0;font:inherit;color:var(--ink);
+  text-decoration:underline;cursor:pointer;min-height:0}
 .soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .done{display:none;font-size:1.3rem;color:var(--ink)}
 .sent .cta,.sent .soon{display:none}
@@ -187,13 +210,27 @@ body.docpage{background:var(--paper);color:var(--dark)}
       <video src="phone.mp4?v=7b0fbc04" poster="phone.webp?v=aabbfdb8" width="540" height="1174" class="screen" autoplay loop muted playsinline preload="metadata" aria-label="Wakeling in use: the alarm is set and Carrot the corgi curls up to sleep, then the alarm is switched off and he wakes up again"></video>
     </div>
     <div>
-      <img src="icon.webp?v=2cdf70ea" width="512" height="512" class="brand" alt="The Wakeling app icon: Carrot the corgi">
+      <img src="icon.webp?v=e1ed1905" width="512" height="512" class="brand" alt="The Wakeling app icon: Carrot the corgi">
       <h1>Wakeling</h1>
       <p class="lede">The alarm that goes quiet the moment you actually get out of
       bed — so it stops without waking the whole house.</p>
       <p class="how">There is no snooze. Get up, finish a short mission, and a
       hand-drawn pet wakes up with you and grows a room you decorate.</p>
-      <p class="soon">Coming to iOS first. Android after.</p>
+      <form class="cta" id="notifyForm" novalidate>
+        <input type="email" name="email" id="notifyEmail" required autocomplete="email"
+               placeholder="you@example.com" aria-label="Email address"
+               aria-describedby="notifyNote">
+        <input type="text" name="hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="picks" role="group" aria-label="Which release do you want to hear about?">
+          <label><input type="checkbox" name="ios" checked> iOS</label>
+          <label><input type="checkbox" name="android"> Android</label>
+        </div>
+        <button type="submit">Tell me when it is out</button>
+      </form>
+      <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
+      <p class="soon" id="notifyNote">One email when your platform is out. Nothing
+      else, and you can unsubscribe.</p>
+      <p class="done">Thank you — we will email you when it is ready.</p>
     </div>
   </div>
 
@@ -203,23 +240,187 @@ body.docpage{background:var(--paper);color:var(--dark)}
     <a href="support.html">Support</a>
   </nav>
 </div>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
-/* Two buttons, one field: whichever was pressed decides where it posts, because
-   iOS and Android ship at different times. Fails loudly — a silent success
-   would leave somebody believing they had signed up. */
+/* ── THE WAITLIST ──
+
+   One field, two checkboxes, one button. The checkboxes are the same two
+   booleans the subscription is tagged with, so the control cannot disagree with
+   the record.
+
+   ── IT MUST FAIL LOUDLY ──
+
+   Every failure path below ends in a visible message. A signup box that
+   swallows an address is worse than no box at all: the person believes they
+   will hear from you and never does, and nothing anywhere reports it. That is
+   the same rule that kept this form unrendered until there was somewhere real
+   for it to post.
+
+   In particular the SDK is a THIRD-PARTY SCRIPT and will sometimes not be
+   there — blocked, offline, an ad blocker, their CDN having a bad day. A
+   submission in that state must say so rather than clearing the field and
+   showing thanks. */
 (function(){
   var form = document.getElementById("notifyForm");
   if (!form) return;
-  var chosen = form.getAttribute("action");
-  form.querySelectorAll("button[data-action]").forEach(function(b){
-    b.addEventListener("click", function(){ chosen = b.dataset.action || chosen });
+  var hint = document.getElementById("notifyHint");
+  var field = document.getElementById("notifyEmail");
+  var button = form.querySelector("button[type=submit]");
+  var opened = Date.now();
+  var busy = false;
+  var ready = false;
+
+  var TYPOS = {"gmial.com":"gmail.com","gmai.com":"gmail.com","gmail.co":"gmail.com","gmil.com":"gmail.com","gnail.com":"gmail.com","hotmial.com":"hotmail.com","hotmai.com":"hotmail.com","hotmail.co":"hotmail.com","outlok.com":"outlook.com","outloo.com":"outlook.com","yahoo.co":"yahoo.com","yaho.com":"yahoo.com","icloud.co":"icloud.com","iclould.com":"icloud.com"};
+  var BURNERS = ["mailinator.com","guerrillamail.com","10minutemail.com","tempmail.com","throwawaymail.com","yopmail.com","trashmail.com","sharklasers.com"];
+  var SUPPORT_EMAIL = "devroolabs@gmail.com";
+
+  function say(html){ hint.innerHTML = html; }
+
+  /* Deliberately loose. The strict grail regex rejects real addresses, and the
+     cost of accepting a bad one here is a bounce, while the cost of rejecting a
+     good one is a person who wanted the app and was told no. */
+  function looksLikeEmail(v){ return /^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/.test(v); }
+
+  function domainOf(v){ return v.slice(v.lastIndexOf("@") + 1).toLowerCase(); }
+
+  function submit(){
+    if (busy) return;
+    var email = field.value.trim();
+    var wantsIos = form.ios.checked;
+    var wantsAndroid = form.android.checked;
+
+    /* The honeypot and the time trap, before anything else touches the network.
+       Both are silent to a human because a human cannot trip them: the field is
+       off-screen, and nobody types an address in under a second and a half.
+       A bot gets the same "thank you" a person does, so a script watching the
+       response learns nothing about why it failed. */
+    if (form.hp.value !== "" || Date.now() - opened < 1500) {
+      document.getElementById("hero").classList.add("sent");
+      return;
+    }
+
+    if (!looksLikeEmail(email)) {
+      say("That does not look like an email address.");
+      field.focus();
+      return;
+    }
+    if (BURNERS.indexOf(domainOf(email)) !== -1) {
+      say("That looks like a temporary address — we will only email you once, so please use a real one.");
+      field.focus();
+      return;
+    }
+    if (!wantsIos && !wantsAndroid) {
+      say("Tick iOS or Android so we know which release to tell you about.");
+      return;
+    }
+
+    /* The typo guard. A SUGGESTION with a one-tap fix, never a block — real
+       addresses do sometimes resemble typos, and the second press goes
+       through whatever we think of it. */
+    var fix = TYPOS[domainOf(email)];
+    if (fix && !form.dataset.insisted) {
+      form.dataset.insisted = "1";
+      say('Did you mean <button type="button" id="fixTypo">' +
+          email.slice(0, email.lastIndexOf("@") + 1) + fix +
+          "</button>? If not, press the button again.");
+      document.getElementById("fixTypo").addEventListener("click", function(){
+        field.value = email.slice(0, email.lastIndexOf("@") + 1) + fix;
+        say("");
+        submit();
+      });
+      return;
+    }
+
+    /* One per browser per ten minutes. Trivially bypassed by anyone who means
+       it, which is not the point: it stops the double-tap that would otherwise
+       fire two identical writes, and the idle refresh-and-resubmit. */
+    try {
+      var last = Number(localStorage.getItem("wakeling.signup") || 0);
+      if (Date.now() - last < 600000) {
+        document.getElementById("hero").classList.add("sent");
+        return;
+      }
+    } catch (e) { /* Private mode denies storage. Not a reason to refuse them. */ }
+
+    if (!window.OneSignal || !window.OneSignalDeferred || !ready) {
+      say("We could not reach the signup service — an ad blocker will do this. " +
+          "Please email <a href='mailto:" + SUPPORT_EMAIL + "'>" + SUPPORT_EMAIL + "</a> and we will add you by hand.");
+      return;
+    }
+
+    busy = true;
+    button.disabled = true;
+    /* Not blank. The subscribe below can take seconds, and its own failure
+       path waits ten before giving up — a disabled button with no message for
+       that long is indistinguishable from a page that has broken. */
+    say("Signing you up…");
+    subscribe(email, wantsIos, wantsAndroid)
+      .then(function(){
+        try { localStorage.setItem("wakeling.signup", String(Date.now())); } catch (e) {}
+        document.getElementById("hero").classList.add("sent");
+      })
+      .catch(function(){
+        busy = false;
+        button.disabled = false;
+        say("That did not go through. Please try again, or email " +
+            "<a href='mailto:" + SUPPORT_EMAIL + "'>" + SUPPORT_EMAIL + "</a>.");
+      });
+  }
+
+  /* THE ONE PLACE THE BACKEND WOULD CHANGE.
+
+     Everything above is validation and interface. If the public-id route ever
+     has to become a server — for Identity Verification, a real rate limit, or a
+     captcha that is actually verified — this function is what gets swapped for
+     a fetch to it, and nothing else on the page moves. */
+  function subscribe(email, wantsIos, wantsAndroid){
+    return new Promise(function(resolve, reject){
+      window.OneSignalDeferred.push(function(OneSignal){
+        /* login BEFORE addEmail, and with the address as the identity.
+
+           Without it every browser is its own anonymous user, so one person
+           signing up on their phone and then their laptop becomes two records
+           with the same address — and the tags land on whichever one, meaning a
+           later "also Android" tick can go to a different record than the iOS
+           one did. Keyed on the address, both visits are the same person and
+           the two flags accumulate on one subscription. */
+        OneSignal.login(email.toLowerCase())
+          .then(function(){ return OneSignal.User.addEmail(email); })
+          .then(function(){
+            /* Two flags, never one 'platform' field. Somebody who ticks Android
+               months after iOS must be ADDED to the second list, not moved off
+               the first — a single field would overwrite and silently
+               un-enrol them from the launch they originally asked about. */
+            return OneSignal.User.addTags({
+              wants_ios: wantsIos ? "true" : "false",
+              wants_android: wantsAndroid ? "true" : "false",
+              source: "landing",
+            });
+          })
+          .then(resolve, reject);
+      });
+      // The SDK queue never rejects on its own if the script is wedged.
+      setTimeout(function(){ reject(new Error("timeout")); }, 10000);
+    });
+  }
+
+  /* 'ready' is set only when init RESOLVES, and the difference matters.
+
+     The obvious guard is "is window.OneSignal there", and it is not enough:
+     when the OneSignal app has no Web platform configured, their script loads
+     and defines window.OneSignal, then throws "App not configured for web push"
+     and never drains this queue. Every check on presence passes, the callback
+     never runs, and the only thing that eventually notices is the timeout in
+     subscribe(). That exact state was hit the first time this form was driven
+     in a browser, so the flag exists because of it and not in anticipation. */
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(function(OneSignal){
+    OneSignal.init({ appId: "a4de19ad-11ea-479d-a7b3-1e1381a9073e", allowLocalhostAsSecureOrigin: true })
+      .then(function(){ ready = true; })
+      .catch(function(){ ready = false; });
   });
-  form.addEventListener("submit", function(e){
-    e.preventDefault();
-    fetch(chosen, { method:"POST", body:new FormData(form), headers:{Accept:"application/json"} })
-      .then(function(){ document.getElementById("hero").classList.add("sent") })
-      .catch(function(){ alert("That did not go through. Please try again, or email us."); });
-  });
+
+  form.addEventListener("submit", function(e){ e.preventDefault(); submit(); });
 })();
 
 /* The demo loop.
