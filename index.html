@@ -194,12 +194,34 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    things touching; dark-on-moon is the same contrast the cream-on-space button
    had above. */
 .signup{--onMoon:#0B0812;color:var(--onMoon)}
-@media(max-width:56rem){.signup{--onMoon:var(--ink)}
-  .signup .ask,.signup .soon{color:var(--dim)}
-  .signup .cta input[type=email]{background:rgba(36,27,32,.5);border-color:rgba(255,244,232,.35);color:var(--ink)}
-  .signup .cta input[type=email]::placeholder{color:rgba(255,244,232,.45)}
-  .signup .cta button{background:var(--ink);color:var(--dark)}
-  .signup .hint{color:#FFD9A8}}
+/* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
+   Stacked, the illustration sits at the top and the whole text column falls
+   below the horizon — measured on a 393x852 viewport, the horizon lands at
+   329px and the lede starts at 615. So the moon ink is not an exception here,
+   it is the rule, and the earlier override that forced this group back to
+   cream was written for a layout that does not exist: it assumed the form
+   would be above the line as it is on a wide screen, and left the entire
+   column at 2.4-3.6:1 on grey.
+
+   The prose takes it too — including the wordmark, which is dark on a phone
+   and cream on a desktop. That is not an inconsistency to fix: the page is one
+   room, and text takes the ink its ground needs. Same principle either way. */
+@media(max-width:56rem){
+  .lockup h1{color:#0B0812;text-shadow:none}
+  .lede{color:#0B0812;text-shadow:none}
+  .how{color:#0B0812;text-shadow:none}
+}
+/* NOTHING ON THE MOON IS TRANSLUCENT, AND THAT IS FORCED.
+
+   Dark ink on this floor has no headroom: against its darkest 5% (#7B777F)
+   full-opacity #0B0812 measures 4.53:1, and AA wants 4.5. Every step of
+   transparency falls under — .95 gives 4.37, .90 gives 4.18, the .75 the note
+   used to carry gives 3.48. Solid greys fare no better: #141019 already fails.
+
+   So opacity cannot carry hierarchy on this half of the page the way it does
+   on the space half, where cream has 17:1 to spend. Size and weight carry it
+   instead — which is the more honest typography anyway.
+
 /* Bold on the moon, and only on the labels.
    Gaegu is a thin handwriting face and the moon floor is a busy texture — at
    regular weight the strokes compete with the craters, which is a legibility
@@ -208,7 +230,7 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    78% is already dark, so opacity moved almost nothing and weight moved a lot.
    The NOTE stays regular. It is fine print, and bold fine print reads as
    shouting a disclaimer — the one line on the page that must not. */
-.signup .ask{color:rgba(11,8,18,.85);font-weight:700}
+.signup .ask{color:var(--onMoon);font-weight:700}
 .signup .picks label{color:var(--onMoon);font-weight:700}
 .signup .picks input{background-color:var(--onMoon)}
 .signup .picks label:hover{color:#000}
@@ -224,7 +246,7 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .signup .cta input[type=email]:focus{border-color:var(--onMoon);
   background:rgba(255,252,247,.8)}
 .signup .cta button{background:var(--onMoon);color:var(--ink)}
-.signup .soon{color:rgba(11,8,18,.75);text-shadow:none}
+.signup .soon{color:var(--onMoon);text-shadow:none}
 .signup .hint{color:#6B2D12}
 .signup .done{color:var(--onMoon)}
 .signup .picks input:focus-visible{outline-color:var(--onMoon)}
