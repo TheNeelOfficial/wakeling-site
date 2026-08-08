@@ -385,13 +385,27 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .soon{font-size:1.1rem;color:var(--dim);margin:.9rem 0 0;text-align:center;
   text-shadow:0 2px 12px rgba(0,0,0,.35)}
 .done{display:none;font-size:1.3rem;color:var(--ink)}
+/* ── THE THANK-YOU MUST NOT CHANGE THE COLUMN'S HEIGHT ──
+
+   display:none on the form let the column collapse by the height of a field, a
+   label row, a button and two lines of note. The hero is vertically centred, so
+   a shorter column re-centres — and the prose above, which had been carefully
+   placed to sit in the SPACE half, slid down across the horizon onto the moon,
+   where it is cream on light grey.
+
+   So the form keeps its box and only stops being visible. visibility:hidden
+   removes it from the tab order and from pointer events exactly as display:none
+   did, but the space it occupied stays occupied, so nothing above it moves. */
+.signup{position:relative} 
 /* The hint goes too. It carries transient state — "Signing you up…" is set
    just before the request and never cleared on success, because success is a
    different element appearing. Without this the thank-you renders with
    "Signing you up…" still sitting above it, which is what the live page did
    the first time a real address went through it. */
-.sent .cta,.sent .soon,.sent .hint{display:none}
-.sent .done{display:block}
+.sent .cta,.sent .soon,.sent .hint{visibility:hidden}
+/* Laid over the space the form just vacated, centred in it. */
+.sent .done{display:flex;position:absolute;inset:0;
+  align-items:center;justify-content:center;text-align:center}
 
 /* ── FOOT ──────────────────────────────────────────────────────────────── */
 .foot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:1.2rem 1.5rem;
