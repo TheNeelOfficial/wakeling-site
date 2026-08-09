@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#FBF6EF">
 <title>Support — Wakeling</title>
 <meta name="description" content="Support and contact for Wakeling.">
 <link rel="icon" href="icon.webp?v=e1ed1905"><link rel="apple-touch-icon" href="notification-icon.png?v=7ca90ccc">
@@ -10,19 +11,24 @@
 <style>
 :root{
   /* Straight from the app's dawn room. */
-  /* The page canvas, and it must be the MOON FLOOR rather than a wall colour.
-     It used to be #7C5A57, the dawn room's warm wall, left behind when the page
-     became the Moon room — and on a phone it showed: scrolling retracts the URL
-     bar, the viewport grows past the document, and the browser fills the extra
-     strip with the canvas colour. That painted a red band under the moon.
-     Below the room there is only ever floor, so the canvas is floor grey,
-     measured as the mean of art/moon-floor.webp. */
-  --floor:#827F86;
+  /* The room's two halves, measured from their own art. Both used to be one
+     colour — #7C5A57, the dawn room's warm wall, left behind when the page
+     became the Moon room — which showed on a phone as a red band under the
+     footer and a mismatched tint above the space. */
+  --space:#0D1325; --floor:#827F86;
   --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
 *{box-sizing:border-box}
+/* The canvas. Given to HTML rather than BODY on purpose: once the root element
+   has a background, body's stops propagating to the canvas and paints only
+   body's own box. That is what lets the two ends differ — space beyond the
+   document, floor within it. */
+html{background:var(--space)}
+/* The doc pages are cream, so their canvas is too; a dark overscroll above a
+   page of black-on-cream text reads as a rendering fault. */
+html:has(.docpage){background:var(--paper)}
 body{margin:0;font-family:var(--font);background:var(--floor);color:var(--ink);
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
