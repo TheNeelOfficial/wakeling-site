@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0D1325">
 <title>Wakeling — the alarm that goes quiet when you get up</title>
 <meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It rings at full volume while you are in bed and goes quiet the moment you get up.">
@@ -19,6 +19,17 @@
   --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  /* The strips the browser used to paint for us.
+     viewport-fit=cover hands the notch and home-indicator areas to the PAGE, so
+     the room now reaches both screen edges and each end wears its own art —
+     space at the top, floor at the bottom. That is the only way to have the two
+     ends differ: theme-color and Safari's body-sampling are each ONE colour, so
+     whichever we chose, the other end wore the wrong one.
+     The price is that content can now slide under the notch, so every padding
+     that used to sit against a screen edge adds its inset back. Zero elsewhere,
+     which is why the fallback is 0px rather than a guess. */
+  --safeT:env(safe-area-inset-top, 0px); --safeR:env(safe-area-inset-right, 0px);
+  --safeB:env(safe-area-inset-bottom, 0px); --safeL:env(safe-area-inset-left, 0px);
 }
 *{box-sizing:border-box}
 /* The canvas. Given to HTML rather than BODY on purpose: once the root element
@@ -118,7 +129,9 @@ a{color:inherit}
    466px void with only 188px on the left. Read as a lopsided page rather than a
    generous one. Slack is now split evenly by the centring instead. */
 .hero{position:relative;z-index:2;min-height:100svh;max-width:78rem;margin:0 auto;
-  padding:2.5rem 1.5rem 4.75rem;display:grid;grid-template-columns:auto auto;
+  padding:calc(2.5rem + var(--safeT)) calc(1.5rem + var(--safeR))
+          calc(4.75rem + var(--safeB)) calc(1.5rem + var(--safeL));
+  display:grid;grid-template-columns:auto auto;
   justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:center}
 @media(max-width:56rem){
   /* align-content, not align-items. With min-height:100svh and two auto rows,
@@ -155,8 +168,15 @@ a{color:inherit}
    before it runs out of width, and the leftover width is exactly the emptiness
    this layout was accused of. Taking the smaller of the two lets it grow to
    whatever the viewport can actually show and stop there.
-   7.25rem is the hero's own vertical padding, which the phone has to share. */
-.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 7.25rem) / 2.11));
+   7.25rem is the hero's own vertical padding, which the phone has to share.
+   The safe-area insets come off alongside it rather than being folded into the
+   constant. Under viewport-fit=cover the hero pads itself clear of the notch
+   and the home indicator, so that height is already spent by the time the phone
+   is measured; leaving them out would have the mockup budget for space the hero
+   has given away, and grow until it crowds the wordmark on exactly the devices
+   with the deepest insets. */
+.phone{--pw:min(clamp(215px,26vw,400px),
+  calc((100svh - 7.25rem - var(--safeT) - var(--safeB)) / 2.11));
   --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
@@ -466,7 +486,11 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 
 /* ── DOC PAGES ─────────────────────────────────────────────────────────── */
 body.docpage{background:var(--paper);color:var(--dark)}
-.doc{max-width:44rem;margin:0 auto;padding:3rem 1.25rem 4rem;min-height:100svh}
+/* Same insets as the hero: viewport-fit=cover applies to every page, so a doc
+   page would otherwise start its first heading under the notch. */
+.doc{max-width:44rem;margin:0 auto;min-height:100svh;
+  padding:calc(3rem + var(--safeT)) calc(1.25rem + var(--safeR))
+          calc(4rem + var(--safeB)) calc(1.25rem + var(--safeL))}
 .doc h1{font-size:2.8rem;margin:0 0 .3rem;line-height:1.1}
 .doc h2{font-size:1.6rem;margin:2.2rem 0 .3rem}
 .doc p{color:#5B4A50;font-size:1.2rem;line-height:1.6;margin:0 0 .8rem}
