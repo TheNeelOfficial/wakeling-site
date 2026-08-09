@@ -487,6 +487,38 @@ body.docpage{background:var(--paper);color:var(--dark)}
 .doc nav{margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--rule);
   display:flex;gap:1.3rem;flex-wrap:wrap;font-size:1.1rem}
 .doc nav a{color:#6B5A5E}
+.doc nav span{color:#9A8A8E}
+
+/* Twenty-three questions do not fit on a page as a flat list — that is a wall
+   of prose you have to read to find out it does not answer you. So each is a
+   closed disclosure row and the page opens as a scannable index of questions,
+   which is the shape people already expect an FAQ to have.
+
+   Built on <details>, so it works with no JavaScript at all, keyboard and
+   screen readers get real disclosure semantics for free, and browser find-in-
+   page opens the matching row on its own. Nothing here changes the legal
+   pages: they are .doc without .faq. */
+.doc.faq details{border-bottom:1px solid var(--rule)}
+.doc.faq summary{position:relative;cursor:pointer;list-style:none;
+  padding:1.05rem 2.1rem 1.05rem 0}
+.doc.faq summary::-webkit-details-marker{display:none}
+.doc.faq summary h2{display:inline;font-size:1.25rem;margin:0}
+/* A chevron drawn from two borders, so there is no icon file to ship and it
+   inherits the page's ink. It points down closed and up open. */
+.doc.faq summary::after{content:"";position:absolute;right:.45rem;top:1.5rem;
+  width:.58rem;height:.58rem;border-right:2px solid #9A8A8E;
+  border-bottom:2px solid #9A8A8E;transform:rotate(45deg);
+  transition:transform .18s ease}
+.doc.faq details[open] summary::after{transform:rotate(-135deg);top:1.75rem}
+.doc.faq summary:focus-visible{outline:2px solid #6B5A5E;outline-offset:3px;
+  border-radius:4px}
+.doc.faq details p{margin:.2rem 0 .8rem}
+.doc.faq details p:last-child{margin-bottom:1.15rem}
+.doc.faq details:last-of-type{border-bottom:none}
+@media (prefers-reduced-motion:reduce){.doc.faq summary::after{transition:none}}
+.doc.faq h3{font-size:1rem;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:#9A8A8E;margin:2.6rem 0 .1rem}
+.doc.faq h3:first-of-type{margin-top:1.6rem}
 </style>
 </head>
 <body class="">
@@ -546,6 +578,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
   </div>
 
   <nav class="foot">
+    <a href="faq.html">FAQs</a>
     <a href="privacy.html">Privacy</a>
     <a href="terms.html">Terms</a>
     <a href="support.html">Support</a>
