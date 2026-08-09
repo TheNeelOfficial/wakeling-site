@@ -32,11 +32,16 @@
   --safeB:env(safe-area-inset-bottom, 0px); --safeL:env(safe-area-inset-left, 0px);
 }
 *{box-sizing:border-box}
-/* The canvas. Given to HTML rather than BODY on purpose: once the root element
-   has a background, body's stops propagating to the canvas and paints only
-   body's own box. That is what lets the two ends differ — space beyond the
-   document, floor within it. */
-html{background:var(--space)}
+/* FLOOR, and only the browser ever sees it.
+   This is the strip Safari paints behind its own bottom toolbar. It used to be
+   space, back when the same colour also had to serve the status area at the
+   top — one value for both ends, so one end was always wrong.
+   viewport-fit=cover ended that. Sampled off the device, the top strip now
+   comes back TEXTURED (#79767C..#4F4E52 across its width) because the page
+   itself reaches under the status area, while the bottom comes back a flat
+   #0E1324. The top no longer depends on this colour at all, so it can go
+   entirely to the bottom — which sits against the moon floor. */
+html{background:var(--floor)}
 /* The doc pages are cream, so their canvas is too; a dark overscroll above a
    page of black-on-cream text reads as a rendering fault. */
 html:has(.docpage){background:var(--paper)}
@@ -54,19 +59,16 @@ html:has(.docpage){background:var(--paper)}
    It has to sit on HTML: overscroll-behavior only reaches the viewport from the
    root element, and the same declaration on body is ignored. */
 html:not(:has(.docpage)){overscroll-behavior-y:none}
-/* BODY is space too, and this is the line iOS Safari actually reads.
-   Measured off the device: the status strip came back #817F85 while the page
-   behind it was #111525 — that is body's colour exactly, not the root's and not
-   theme-color's, so Safari tints its top area from BODY and ignores the other
-   two. Setting the root alone left the strip grey against the space it adjoins.
-
-   Costs nothing to give away: .room is body's only child and fills the viewport
-   (min-height:100lvh), so body's background is covered everywhere and never
-   renders. It was floor grey as a fallback for a gap at the BOTTOM, a job it
-   silently lost the moment html got a background of its own — body's colour
-   stops propagating to the canvas then, and the canvas is what fills that gap.
-   The room keeps its own floor base for the art-fails case. */
-body{margin:0;font-family:var(--font);background:var(--space);color:var(--ink);
+/* Floor here too, and set for the same reader.
+   iOS Safari tints its chrome from BODY — established by measurement, not
+   guesswork: when body was floor the status strip came back #817F85, and when
+   body went to space it followed. The root and theme-color did not move it.
+   Which of the two actually paints the remaining bottom strip is not worth
+   pinning down, because giving both the same colour costs nothing: .room is
+   body's only child and fills the viewport, covering body on all four sides,
+   so this never renders as page. The room keeps its own floor base for the
+   art-fails case. */
+body{margin:0;font-family:var(--font);background:var(--floor);color:var(--ink);
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
 a{color:inherit}
@@ -106,8 +108,13 @@ a{color:inherit}
   background:var(--floor);
   --s:calc(100svh / 640);--horizon:60.9%;--roomW:305px;
   --skirtH:calc(var(--roomW) * 45 / 1125)}
+/* Each half carries its own colour UNDER its texture, so a failed image
+   degrades to the right half of the room instead of to whatever the room's
+   single base happens to be. Written in the shorthand deliberately: the
+   background shorthand resets background-color, so declaring the image alone
+   would quietly throw the colour away. */
 .wall{position:absolute;left:0;right:0;top:0;height:var(--horizon);
-  background:url(art/moon-wall.webp) repeat;
+  background:var(--space) url(art/moon-wall.webp) repeat;
   background-size:calc(var(--roomW) * 600 / 1125) auto}
 /* The rocky band straddles the horizon rather than sitting under it. Its own
    art turns from space to moon 53.3% of the way down (row 24 of 45, measured),
@@ -117,7 +124,8 @@ a{color:inherit}
   top:calc(var(--horizon) - (var(--skirtH) * 0.533));
   background:url(art/moon-skirting.webp) repeat-x;background-size:var(--roomW) 100%}
 .floor{position:absolute;left:0;right:0;top:var(--horizon);bottom:0;
-  background:url(art/moon-floor.webp) repeat;background-size:var(--roomW) auto}
+  background:var(--floor) url(art/moon-floor.webp) repeat;
+  background-size:var(--roomW) auto}
 .grain{position:absolute;inset:0;pointer-events:none;opacity:.13;
   background:url(art/grain.webp) repeat;background-size:calc(64 * var(--s)) calc(64 * var(--s))}
 
