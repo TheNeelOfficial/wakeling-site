@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#FBF6EF">
 <title>Privacy Policy — Wakeling</title>
 
@@ -19,29 +19,23 @@
   --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  /* The strips the browser used to paint for us.
-     viewport-fit=cover hands the notch and home-indicator areas to the PAGE, so
-     the room now reaches both screen edges and each end wears its own art —
-     space at the top, floor at the bottom. That is the only way to have the two
-     ends differ: theme-color and Safari's body-sampling are each ONE colour, so
-     whichever we chose, the other end wore the wrong one.
-     The price is that content can now slide under the notch, so every padding
-     that used to sit against a screen edge adds its inset back. Zero elsewhere,
-     which is why the fallback is 0px rather than a guess. */
-  --safeT:env(safe-area-inset-top, 0px); --safeR:env(safe-area-inset-right, 0px);
-  --safeB:env(safe-area-inset-bottom, 0px); --safeL:env(safe-area-inset-left, 0px);
 }
 *{box-sizing:border-box}
-/* FLOOR, and only the browser ever sees it.
-   This is the strip Safari paints behind its own bottom toolbar. It used to be
-   space, back when the same colour also had to serve the status area at the
-   top — one value for both ends, so one end was always wrong.
-   viewport-fit=cover ended that. Sampled off the device, the top strip now
-   comes back TEXTURED (#79767C..#4F4E52 across its width) because the page
-   itself reaches under the status area, while the bottom comes back a flat
-   #0E1324. The top no longer depends on this colour at all, so it can go
-   entirely to the bottom — which sits against the moon floor. */
-html{background:var(--floor)}
+/* SPACE, at both ends, and the choice is deliberate rather than a limitation
+   we failed to route around.
+   iOS Safari paints a strip at the top and another at the bottom, and both take
+   ONE colour — there is no per-edge control in theme-color or anywhere else. So
+   one end always wears the wrong half of the room, and the top is the one that
+   matters: it is beside the wordmark and the pitch, it is what somebody sees
+   first, and it is on screen at every scroll position.
+
+   viewport-fit=cover WAS tried, and it works in the narrow sense — the page
+   reaches under the status area and that strip comes back textured rather than
+   flat. But then the strip shows whatever the page is scrolled to, so it turns
+   moon the moment you scroll down, which is worse than a constant that is
+   right at the top of the page. Reverted, along with the safe-area padding it
+   needed. Do not re-add it without solving that. */
+html{background:var(--space)}
 /* The doc pages are cream, so their canvas is too; a dark overscroll above a
    page of black-on-cream text reads as a rendering fault. */
 html:has(.docpage){background:var(--paper)}
@@ -59,16 +53,13 @@ html:has(.docpage){background:var(--paper)}
    It has to sit on HTML: overscroll-behavior only reaches the viewport from the
    root element, and the same declaration on body is ignored. */
 html:not(:has(.docpage)){overscroll-behavior-y:none}
-/* Floor here too, and set for the same reader.
-   iOS Safari tints its chrome from BODY — established by measurement, not
-   guesswork: when body was floor the status strip came back #817F85, and when
-   body went to space it followed. The root and theme-color did not move it.
-   Which of the two actually paints the remaining bottom strip is not worth
-   pinning down, because giving both the same colour costs nothing: .room is
-   body's only child and fills the viewport, covering body on all four sides,
-   so this never renders as page. The room keeps its own floor base for the
-   art-fails case. */
-body{margin:0;font-family:var(--font);background:var(--floor);color:var(--ink);
+/* Space here too, and this is the line iOS Safari actually reads.
+   Established by measurement: when body was floor the status strip came back
+   #817F85, and when body went to space the strip followed. The root and
+   theme-color did not move it on their own. They are set to match anyway,
+   because agreeing costs nothing — .room is body's only child and covers it on
+   all four sides, so none of these ever renders as page. */
+body{margin:0;font-family:var(--font);background:var(--space);color:var(--ink);
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
 a{color:inherit}
@@ -137,9 +128,7 @@ a{color:inherit}
    466px void with only 188px on the left. Read as a lopsided page rather than a
    generous one. Slack is now split evenly by the centring instead. */
 .hero{position:relative;z-index:2;min-height:100svh;max-width:78rem;margin:0 auto;
-  padding:calc(2.5rem + var(--safeT)) calc(1.5rem + var(--safeR))
-          calc(4.75rem + var(--safeB)) calc(1.5rem + var(--safeL));
-  display:grid;grid-template-columns:auto auto;
+  padding:2.5rem 1.5rem 4.75rem;display:grid;grid-template-columns:auto auto;
   justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:center}
 @media(max-width:56rem){
   /* align-content, not align-items. With min-height:100svh and two auto rows,
@@ -176,15 +165,8 @@ a{color:inherit}
    before it runs out of width, and the leftover width is exactly the emptiness
    this layout was accused of. Taking the smaller of the two lets it grow to
    whatever the viewport can actually show and stop there.
-   7.25rem is the hero's own vertical padding, which the phone has to share.
-   The safe-area insets come off alongside it rather than being folded into the
-   constant. Under viewport-fit=cover the hero pads itself clear of the notch
-   and the home indicator, so that height is already spent by the time the phone
-   is measured; leaving them out would have the mockup budget for space the hero
-   has given away, and grow until it crowds the wordmark on exactly the devices
-   with the deepest insets. */
-.phone{--pw:min(clamp(215px,26vw,400px),
-  calc((100svh - 7.25rem - var(--safeT) - var(--safeB)) / 2.11));
+   7.25rem is the hero's own vertical padding, which the phone has to share. */
+.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 7.25rem) / 2.11));
   --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
@@ -494,11 +476,7 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 
 /* ── DOC PAGES ─────────────────────────────────────────────────────────── */
 body.docpage{background:var(--paper);color:var(--dark)}
-/* Same insets as the hero: viewport-fit=cover applies to every page, so a doc
-   page would otherwise start its first heading under the notch. */
-.doc{max-width:44rem;margin:0 auto;min-height:100svh;
-  padding:calc(3rem + var(--safeT)) calc(1.25rem + var(--safeR))
-          calc(4rem + var(--safeB)) calc(1.25rem + var(--safeL))}
+.doc{max-width:44rem;margin:0 auto;padding:3rem 1.25rem 4rem;min-height:100svh}
 .doc h1{font-size:2.8rem;margin:0 0 .3rem;line-height:1.1}
 .doc h2{font-size:1.6rem;margin:2.2rem 0 .3rem}
 .doc p{color:#5B4A50;font-size:1.2rem;line-height:1.6;margin:0 0 .8rem}
