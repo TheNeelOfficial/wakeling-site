@@ -29,6 +29,20 @@ html{background:var(--space)}
 /* The doc pages are cream, so their canvas is too; a dark overscroll above a
    page of black-on-cream text reads as a rendering fault. */
 html:has(.docpage){background:var(--paper)}
+/* The last place the canvas could still show on the landing page: pulling past
+   the bottom rubber-bands and flashes space under the moon floor. There is no
+   per-edge control — this kills the top bounce too — which is acceptable only
+   because the top bounce now reveals the space colour it sits against, so
+   nothing is lost by removing it.
+
+   Scoped away from the doc pages deliberately. Their canvas already matches
+   their body, so a bounce there shows the right colour, and taking the native
+   scroll feel off a page of text buys nothing. Note this also disables
+   pull-to-refresh on the landing page in Android Chrome.
+
+   It has to sit on HTML: overscroll-behavior only reaches the viewport from the
+   root element, and the same declaration on body is ignored. */
+html:not(:has(.docpage)){overscroll-behavior-y:none}
 body{margin:0;font-family:var(--font);background:var(--floor);color:var(--ink);
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
