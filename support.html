@@ -10,12 +10,20 @@
 <style>
 :root{
   /* Straight from the app's dawn room. */
-  --wall:#7C5A57; --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
+  /* The page canvas, and it must be the MOON FLOOR rather than a wall colour.
+     It used to be #7C5A57, the dawn room's warm wall, left behind when the page
+     became the Moon room — and on a phone it showed: scrolling retracts the URL
+     bar, the viewport grows past the document, and the browser fills the extra
+     strip with the canvas colour. That painted a red band under the moon.
+     Below the room there is only ever floor, so the canvas is floor grey,
+     measured as the mean of art/moon-floor.webp. */
+  --floor:#827F86;
+  --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--font);background:var(--wall);color:var(--ink);
+body{margin:0;font-family:var(--font);background:var(--floor);color:var(--ink);
   -webkit-font-smoothing:antialiased}
 img{max-width:100%;display:block}
 a{color:inherit}
@@ -41,7 +49,18 @@ a{color:inherit}
    requires. Sized to the viewport instead, the page drew the same room about
    five times more zoomed in: the horizon matched to the pixel and the textures
    still did not meet. */
-.room{position:relative;min-height:100svh;overflow:hidden;background:var(--wall);
+/* min-height is declared twice on purpose. svh is the viewport with the mobile
+   browser's URL bar SHOWN; lvh is the same viewport with it hidden. Sized to
+   svh alone, the room falls about 90px short of the screen the moment a scroll
+   retracts that bar, and the page canvas shows through beneath it. lvh makes
+   the room as tall as the viewport can ever become, so there is nothing left to
+   show through. svh stays first as the fallback for browsers without lvh.
+
+   This cannot disturb the horizon: --horizon is set in PIXELS from the room's
+   top, measured off the video, so growing the room DOWNWARD does not move it.
+   The extra height is floor, which is exactly what belongs below the floor. */
+.room{position:relative;min-height:100svh;min-height:100lvh;overflow:hidden;
+  background:var(--floor);
   --s:calc(100svh / 640);--horizon:60.9%;--roomW:305px;
   --skirtH:calc(var(--roomW) * 45 / 1125)}
 .wall{position:absolute;left:0;right:0;top:0;height:var(--horizon);
