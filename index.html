@@ -309,6 +309,30 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
   max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 @media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
+
+/* ── THE THREE PANELS ──
+
+   Its own ground, deliberately: the hero sits on a room illustration whose ink
+   flips at 56rem, and inheriting that would mean three panels of prose changing
+   colour mid-page. Paper and dark ink at every width instead — this is reading
+   copy, and reading copy wants one contract.
+
+   auto-fit rather than a fixed three columns, so it is three across on a
+   desktop, two on a tablet and one on a phone with no breakpoint written for
+   any of them. 18rem is the width at which the headings stop wrapping. */
+.more{background:var(--paper);color:var(--dark);
+  margin:3rem -1.5rem 0;padding:3rem 1.5rem 2.6rem;
+  display:grid;gap:2.2rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));
+  max-width:none}
+.more .panel{max-width:34rem}
+.more h2{font-size:clamp(1.35rem,2.4vw,1.7rem);line-height:1.25;margin:0 0 .6rem;
+  color:var(--dark)}
+.more p{font-size:clamp(1rem,1.7vw,1.13rem);line-height:1.55;margin:0 0 .8rem;
+  color:rgba(36,27,32,.86)}
+.more p:last-child{margin-bottom:0}
+/* The one line on this page that is a claim about PRICE rather than about the
+   product. Set apart so it reads as a fact rather than as more sell. */
+.more .note{color:rgba(36,27,32,.62)}
 /* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
    Stacked, the illustration sits at the top and the whole text column falls
    below the horizon — measured on a 393x852 viewport, the horizon lands at
@@ -584,6 +608,57 @@ body.docpage{background:var(--paper);color:var(--dark)}
     <a href="support.html">Support</a>
   </nav>
 </div>
+  <!-- ── THE THREE THINGS THE ONE-SCREEN OPENER CANNOT FIT ──
+
+       The hero says the deal in two sentences and that is all it should say.
+       But the page then went straight to a footer, so the two ideas people
+       actually ask about — how it avoids waking the room, and what the pet is
+       FOR — lived only in the FAQ, behind a click nobody makes before deciding.
+
+       AFTER the room, not inside it. .room is a full-viewport scene with
+       min-height:100svh and overflow:hidden — it is a picture, and anything
+       added to it is clipped rather than laid out. Put here the page simply
+       grows: the room stays exactly one screen and this scrolls under it.
+
+       Its own paper ground, so it is unaffected by the horizon logic above and
+       takes dark ink at every width.
+
+       Three panels because there are three ideas, and they are ordered the way
+       somebody meets them: the alarm goes off, the pet reacts to it, the room
+       is what the pet earns. -->
+  <section class="more">
+    <div class="panel">
+      <h2>Without waking the house</h2>
+      <p>It is at full volume while you are still in bed, and that is the
+      point — but the moment you genuinely stand up and start moving, it fades
+      away. Not when you tap something. When your body moves.</p>
+      <p>Stop moving and it comes back, so it cannot be gamed by rolling over.
+      Get on with the mission and it stays quiet the whole time. The person
+      next to you hears the first few seconds and then nothing.</p>
+      <p class="note">Free for everyone. It is what the app is for, so it is
+      not the part we sell.</p>
+    </div>
+
+    <div class="panel">
+      <h2>A pet that wakes with you</h2>
+      <p>There is an animal in the room behind the clock. It sleeps while your
+      alarm is set, wakes up when you do, and it is hand-drawn — every frame of
+      it, asleep, waking, and being scratched behind the ear.</p>
+      <p>Get up and it brings you something back. Miss a morning and it is
+      still there tomorrow: nothing dies, nothing resets, and no streak is held
+      over you. It is a reason to get up, not another thing to keep alive.</p>
+    </div>
+
+    <div class="panel">
+      <h2>A room you make yours</h2>
+      <p>Every morning you get up earns love, and love buys the room around
+      your pet — mats, bowls, tables, clocks, and the walls themselves.</p>
+      <p>Wake up in Paris, at the seaside, in the desert, or on the Moon. Pick
+      a different animal. None of it is a loot box and none of it expires; you
+      choose what to save for, and it stays bought.</p>
+    </div>
+  </section>
+
 <script>
 /* ── THE WAITLIST ──
 
