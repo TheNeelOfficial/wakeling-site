@@ -263,7 +263,30 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    The button inverts with it. A cream button on a light grey floor is two pale
    things touching; dark-on-moon is the same contrast the cream-on-space button
    had above. */
-.signup{--onMoon:#0B0812;color:var(--onMoon)}
+/* ── PURE BLACK, AND THE ONLY THING THAT COULD BE CHANGED ──
+   Nick: the text on the moon is hard to read. Measured against the floor art
+   itself rather than its mean, because the mean flatters it:
+
+     moon floor luminance   p5 0.184   median 0.208   p95 0.232
+
+   Against the DARKEST 5%, which is where reading actually fails, #0B0812 gave
+   4.42:1 — under the 4.5 that body text needs. Every line in this form was
+   failing there, including the two already set at weight 700.
+
+   Pure black gives 4.68:1 and takes all of them over the line. That is the
+   whole fix, and it is available because the moon is a mid-grey: nothing else
+   in the palette does better. The space navy #0D1325 was considered and is
+   WORSE — 4.12:1 — so tinting the ink toward the sky is the wrong direction.
+   Cream is worse again at 4.14:1.
+
+   The real fix would be a lighter floor: #B5B2B8 would give 9.27:1. That means
+   editing the art, which is not on the table. So this is the ceiling, and the
+   ceiling happens to clear the bar.
+
+   No hue shift is visible at this size on a grey ground, and the same token
+   paints the CTA button, the checkboxes and the platform glyphs, which all
+   read as black already. */
+.signup{--onMoon:#000000;color:var(--onMoon)}
 
 /* NOTHING ON THE MOON IS TRANSLUCENT, AND THAT IS FORCED.
 
@@ -301,7 +324,15 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   background:rgba(255,252,247,.8)}
 .signup .cta button{background:var(--onMoon);color:var(--ink)}
 .signup .soon{color:var(--onMoon);text-shadow:none}
-.signup .hint{color:#6B2D12}
+/* Black, not the warm brown it used to be.
+   #6B2D12 measured 2.33:1 against the darkest part of the floor — by a
+   distance the least readable thing on the page, and it is the line that
+   reports a FAILED signup. The warmth cannot be kept: to clear 4.5:1 on this
+   ground the ink has to sit below 0.002 luminance, which only near-black does.
+   Even #3A1808, dark enough to barely read as brown, gets 3.56:1.
+   Status is still carried by role="status" and aria-live for anyone not
+   reading colour, and by the text itself for everyone else. */
+.signup .hint{color:#000}
 .signup .done{color:var(--onMoon)}
 .signup .picks input:focus-visible{outline-color:var(--onMoon)}
 .lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
@@ -323,9 +354,15 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
    and cream on a desktop. That is not an inconsistency to fix: the page is one
    room, and text takes the ink its ground needs. Same principle either way. */
 @media(max-width:56rem){
-  .lockup h1{color:#0B0812;text-shadow:none}
-  .lede{color:#0B0812;text-shadow:none}
-  .how{color:#0B0812;text-shadow:none}
+  /* Pure black, for the reason given at --onMoon: #0B0812 measures 4.42:1
+     against the darkest 5% of the floor and body text needs 4.5. These three
+     are the whole text column on a phone — the horizon lands at 329px and
+     everything below it is on the moon — so this is where Nick would have
+     seen it. They hardcode the value rather than using --onMoon because that
+     token is scoped to .signup. */
+  .lockup h1{color:#000;text-shadow:none}
+  .lede{color:#000;text-shadow:none}
+  .how{color:#000;text-shadow:none}
 }
 
 
