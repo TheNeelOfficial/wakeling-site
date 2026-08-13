@@ -310,29 +310,6 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
 @media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
 
-/* ── THE THREE PANELS ──
-
-   Its own ground, deliberately: the hero sits on a room illustration whose ink
-   flips at 56rem, and inheriting that would mean three panels of prose changing
-   colour mid-page. Paper and dark ink at every width instead — this is reading
-   copy, and reading copy wants one contract.
-
-   auto-fit rather than a fixed three columns, so it is three across on a
-   desktop, two on a tablet and one on a phone with no breakpoint written for
-   any of them. 18rem is the width at which the headings stop wrapping. */
-.more{background:var(--paper);color:var(--dark);
-  margin:3rem -1.5rem 0;padding:3rem 1.5rem 2.6rem;
-  display:grid;gap:2.2rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));
-  max-width:none}
-.more .panel{max-width:34rem}
-.more h2{font-size:clamp(1.35rem,2.4vw,1.7rem);line-height:1.25;margin:0 0 .6rem;
-  color:var(--dark)}
-.more p{font-size:clamp(1rem,1.7vw,1.13rem);line-height:1.55;margin:0 0 .8rem;
-  color:rgba(36,27,32,.86)}
-.more p:last-child{margin-bottom:0}
-/* The one line on this page that is a claim about PRICE rather than about the
-   product. Set apart so it reads as a fact rather than as more sell. */
-.more .note{color:rgba(36,27,32,.62)}
 /* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
    Stacked, the illustration sits at the top and the whole text column falls
    below the horizon — measured on a 393x852 viewport, the horizon lands at
