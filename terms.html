@@ -128,8 +128,21 @@ a{color:inherit}
    466px void with only 188px on the left. Read as a lopsided page rather than a
    generous one. Slack is now split evenly by the centring instead. */
 .hero{position:relative;z-index:2;min-height:100svh;max-width:78rem;margin:0 auto;
-  padding:2.5rem 1.5rem 4.75rem;display:grid;grid-template-columns:auto auto;
-  justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:center}
+  /* Trimmed top and bottom when the page had to fit a 1366x768 laptop, which
+     is the shortest viewport worth designing for. The bottom still clears the
+     absolutely positioned .foot with room to spare. */
+  /* Top padding in vh for the same reason the gaps around the doodles are:
+     the page is pinned to one screen, so air at the top and air around the
+     drawings are drawn from one budget. This takes what is going spare on a
+     large monitor and leaves a 1440x900 laptop where it was. */
+  padding:clamp(2.4rem,6.4vh,6.5rem) 1.5rem 3.6rem;display:grid;grid-template-columns:auto auto;
+  /* start, not center: the wordmark and the phone begin on the same line.
+     Centring gave the two columns different tops, because they are different
+     heights, and the lockup floated 38px below the top of the device beside
+     it. Aligning the tops also lifts the phone, which lifts the horizon, which
+     lifts the signup group pinned to it — so this buys height rather than
+     costing it. */
+  justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:start}
 @media(max-width:56rem){
   /* align-content, not align-items. With min-height:100svh and two auto rows,
      the spare height was being handed to the ROWS, which then centred their
@@ -166,7 +179,18 @@ a{color:inherit}
    this layout was accused of. Taking the smaller of the two lets it grow to
    whatever the viewport can actually show and stop there.
    7.25rem is the hero's own vertical padding, which the phone has to share. */
-.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 7.25rem) / 2.11));
+/* The second term is what keeps the phone inside a SHORT viewport: it is the
+   width that makes the mockup fit the height left over after the hero's
+   padding. It has grown twice: to 8.75rem to fit a 1280x720 window, and to
+   8.5rem to pay for the air at the top of the page. That second one is the
+   trade to understand, and it cuts both ways. The page is one screen, so
+   every pixel of top padding has to come from somewhere and the mockup is the
+   only thing with any give. But the mockup also SETS the horizon: a smaller
+   phone lifts the line, and lifting it far enough drops the free promise onto
+   the moon, which is not where it belongs. 8.5rem is where both hold — no
+   scroll at any size, and the promise stays in the space above the line from
+   1440x900 upwards. */
+.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 8.5rem) / 2.11));
   --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
@@ -230,7 +254,7 @@ a{color:inherit}
 .brand{width:clamp(58px,6.5vw,78px);height:auto;border-radius:22.5%;
   margin:0;flex:0 0 auto;box-shadow:0 12px 26px rgba(0,0,0,.38)}
 
-h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
+h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
 /* ── A SHADOW UNDER THE WORDS ──
 
@@ -335,11 +359,87 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .signup .hint{color:#000}
 .signup .done{color:var(--onMoon)}
 .signup .picks input:focus-visible{outline-color:var(--onMoon)}
-.lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
-  margin:0 0 1rem;max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
-.how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
-  max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
-@media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
+/* The ceiling came down from 1.75rem when the page stopped fitting a 1280x800
+   laptop: at 1.75 this ran to four lines, at 1.6 it runs to three, and three
+   lines of hero is what the rest of the column was budgeted around. */
+.lede{font-size:clamp(1.3rem,2.4vw,1.6rem);line-height:1.42;color:var(--muted);
+  /* The gap that sets the doodles apart from the prose.
+     In vh, not rem, and generous. align() pins the signup group to the
+     horizon, so the space between the promise and the email field is dead
+     space the layout is already paying for: at 1440x900 it is 117px. Growing
+     this gap SPENDS that space rather than adding page height, right up until
+     the pitch reaches the horizon. How much there is to spend scales with the
+     viewport, which is why this does too. Short screens have none, and take
+     the fixed values in the max-height block further down. */
+  margin:0 0 clamp(1rem,6vh,4.5rem);max-width:34rem;
+  text-shadow:0 2px 12px rgba(0,0,0,.35)}
+/* ── THE FOUR STEPS ──
+   A row that becomes two rows when the measure runs out. The arrows are list
+   items too, so they wrap with the steps they sit between instead of stranding
+   one at the end of a line. */
+/* ── ONE ROW, ALWAYS ──
+   nowrap and flex:1 1 0 rather than a fixed item width. The four drawings are
+   a sequence: wrapped onto two lines they stop reading as one, and on a phone
+   a fixed width guaranteed that wrap. The steps share whatever is left after
+   the arrows, so the row fits 320px and 1440px by the same rule.
+
+   min-width:0 is what lets them actually shrink. A flex item's floor is its
+   content by default, so without it the labels hold the row wide and it
+   overflows instead of tightening.
+
+   Labels align at flex-start, so a caption that wraps to two lines drops its
+   own text without moving the drawing above it or the three beside it. */
+/* The MEASURE OF THE PROSE, not of the column.
+   The column is as wide as the signup row (714px at 1366), the paragraphs are
+   34rem inside it, and centring the row in the column parked it 109px to the
+   right of the text it belongs to. Matching the prose measure and its left
+   edge puts the four drawings under the sentence they illustrate, spread
+   evenly across it. */
+.steps{list-style:none;display:flex;flex-wrap:nowrap;align-items:flex-start;
+  justify-content:center;gap:.3rem;margin:0 0 clamp(.7rem,4.5vh,3.5rem);padding:0;
+  max-width:min(34rem,100%);color:var(--muted)}
+.steps li{display:flex;flex-direction:column;align-items:center;gap:.35rem;
+  flex:1 1 0;min-width:0;text-align:center}
+.steps li svg{width:38px;height:38px;display:block;opacity:.92}
+.steps li span{font-size:.84rem;line-height:1.2}
+/* The arrow is not a step, so it neither grows nor claims a label's width. */
+.steps li.arrow{flex:0 0 auto;align-self:flex-start;margin-top:.6rem;opacity:.5}
+.steps li.arrow svg{width:17px;height:17px}
+@media(max-width:56rem){.lede,.free,.steps{margin-left:auto;margin-right:auto}}
+/* Tighter again where the row is narrowest, so four drawings and three arrows
+   still fit a 320px phone without the labels forcing a scrollbar. */
+@media(max-width:26rem){
+  .steps{gap:.15rem}
+  .steps li svg{width:32px;height:32px}
+  .steps li span{font-size:.75rem}
+  .steps li.arrow svg{width:13px;height:13px}
+}
+/* Brighter than the note under it and heavier, so the promise reads at a
+   glance without a box round it. It lives inside .signup, so it is already on
+   the moon and already dark. */
+/* Brighter than the prose above it, because it is the one promise on the page
+   worth reading twice. Same shadow as its neighbours: it is in space now. */
+.free{font-size:clamp(1rem,1.8vw,1.16rem);line-height:1.35;font-weight:700;
+  color:var(--ink);margin:0 0 .2rem;max-width:min(34rem,100%);text-align:center;
+  text-shadow:0 2px 12px rgba(0,0,0,.35)}
+/* Set by align() when this line falls below the horizon, which happens on
+   short viewports. Same ink the signup group uses on the same ground. */
+.free.onMoon{color:#000;text-shadow:none}
+
+/* ── VERY SHORT VIEWPORTS ──
+   Under about 672px of usable height the page has nothing left to spend, and
+   the one-screen rule outranks the breathing room around the doodles. 1366x768
+   sits just above this line and keeps the generous spacing; a 1280x720 window,
+   where the browser leaves only 633px, takes the tight version. */
+/* Raised from 42rem: a 1366x768 laptop leaves 681px and a 1280x800 leaves
+   713px, and at both the pitch already reaches the horizon, so there is
+   nothing to spend. Above this the dead space appears and the clamps above
+   take over. */
+@media(max-height:46rem){
+  .hero{padding-top:1.4rem}
+  .lede{margin-bottom:1.05rem}
+  .steps{margin-bottom:.75rem}
+}
 
 /* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
    Stacked, the illustration sits at the top and the whole text column falls
@@ -362,7 +462,11 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
      token is scoped to .signup. */
   .lockup h1{color:#000;text-shadow:none}
   .lede{color:#000;text-shadow:none}
-  .how{color:#000;text-shadow:none}
+  /* The doodle strokes are currentColor, so this inks the drawings and their
+     labels together. On a phone this whole column is on the moon. */
+  .steps{color:#000}
+  .steps li svg{opacity:1}
+  .free{color:#000;text-shadow:none}
 }
 
 
@@ -507,7 +611,7 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   align-items:center;justify-content:center;text-align:center}
 
 /* ── FOOT ──────────────────────────────────────────────────────────────── */
-.foot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:1.2rem 1.5rem;
+.foot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:.95rem 1.5rem;
   display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;font-size:1.1rem;
   color:var(--dim);text-shadow:0 2px 10px rgba(0,0,0,.4)}
 .foot a{text-decoration:none;border-bottom:1px solid rgba(255,244,232,.3)}
@@ -560,6 +664,6 @@ body.docpage{background:var(--paper);color:var(--dark)}
 </style>
 </head>
 <body class="docpage">
-<div class="doc"><header><img src="icon.webp?v=e1ed1905" width="512" height="512" alt=""><b>Wakeling</b></header><h1>Terms of Use</h1><p class="stamp">Wakeling 1.0.0 · updated August 2026</p><h2>Wakeling is an alarm, not a safety device</h2><p>Please read this part. Wakeling depends on iOS to fire an alarm, and on your phone being charged, switched on, and not swiped out of the app switcher.</p><p>Do not rely on it alone for anything where being woken matters critically — a flight, an exam, a medical dose, a shift where lateness is dangerous. Set a second alarm.</p><p>The app is provided as-is, without warranty. To the extent the law allows, the developer is not liable for any loss arising from an alarm that does not sound.</p><h2>The mission</h2><p>Wakeling is deliberately difficult to switch off: dismissing it requires completing a physical mission. This is the product working as intended, not a fault.</p><p>A fallback is always available if a mission cannot be completed, so you are never locked out of stopping the alarm.</p><h2>Physical activity</h2><p>The Squat Mission asks you to exercise, and the walk asks you to walk, immediately on waking. Choose a mission appropriate to your health and your surroundings, and use the fallback if you should not be exercising.</p><p>You are responsible for your own safety while completing a mission. Do not use the walking missions anywhere it would be unsafe to walk while half asleep.</p><h2>Wakeling Pro</h2><p>Wakeling Pro is an annual auto-renewable subscription. The price is the one shown on the App Store page and on the purchase screen in your own currency, which is the price you are charged.</p><p>Payment is charged to your Apple Account when you confirm the purchase. The subscription renews automatically for a further year unless it is cancelled at least 24 hours before the end of the current period, and your account is charged for the renewal within 24 hours of that period ending.</p><p>Manage or cancel at any time in Settings → Apple Account → Subscriptions. Cancelling stops the next renewal; it does not shorten the period you have already paid for, and Pro keeps working until that period ends.</p><p>A one-time Lifetime purchase is also offered. It is paid once, it does not renew, and there is nothing to cancel.</p><p>The free trial does not require a card and does not turn into a paid subscription by itself. When it ends, Pro features stop and the alarm keeps working — the alarm and its missions are never behind the paywall. If you buy a subscription while a free trial is running, any unused part of that trial ends at the moment of purchase.</p><p>Items bought with love, the in-app currency earned by waking up, are unlocked for your install. Restore Purchases recovers items bought with real money; love and the items it bought are local to the device.</p><h2>Acceptable use</h2><p>Do not decompile, resell, or redistribute the app, and do not attempt to defeat the mission checks in a modified build.</p><p>The artwork, sounds, characters and code are the property of the developer and may not be extracted or reused.</p><h2>Changes</h2><p>These terms and the privacy policy may change as the app changes. The version in the app you are running always describes that version.</p><nav><a href="index.html">Home</a><a href="faq.html">FAQs</a><a href="privacy.html">Privacy</a><span>Terms</span><a href="support.html">Support</a></nav></div>
+<div class="doc"><header><img src="icon.webp?v=e1ed1905" width="512" height="512" alt=""><b>Wakeling</b></header><h1>Terms of Use</h1><p class="stamp">Wakeling 1.0.0 · updated August 2026</p><h2>Wakeling is an alarm, not a safety device</h2><p>Please read this part. Wakeling depends on iOS to fire an alarm, and on your phone being charged and switched on.</p><p>Do not rely on it alone for anything where being woken matters critically — a flight, an exam, a medical dose, a shift where lateness is dangerous. Set a second alarm.</p><p>The app is provided as-is, without warranty. To the extent the law allows, the developer is not liable for any loss arising from an alarm that does not sound.</p><h2>The mission</h2><p>Wakeling is deliberately difficult to switch off: dismissing it requires completing a physical mission. This is the product working as intended, not a fault.</p><p>A fallback is always available if a mission cannot be completed, so you are never locked out of stopping the alarm.</p><h2>Physical activity</h2><p>The Squat Mission asks you to exercise, and the walk asks you to walk, immediately on waking. Choose a mission appropriate to your health and your surroundings, and use the fallback if you should not be exercising.</p><p>You are responsible for your own safety while completing a mission. Do not use the walking missions anywhere it would be unsafe to walk while half asleep.</p><h2>Wakeling Pro</h2><p>Wakeling Pro is an annual auto-renewable subscription. The price is the one shown on the App Store page and on the purchase screen in your own currency, which is the price you are charged.</p><p>Payment is charged to your Apple Account when you confirm the purchase. The subscription renews automatically for a further year unless it is cancelled at least 24 hours before the end of the current period, and your account is charged for the renewal within 24 hours of that period ending.</p><p>Manage or cancel at any time in Settings → Apple Account → Subscriptions. Cancelling stops the next renewal; it does not shorten the period you have already paid for, and Pro keeps working until that period ends.</p><p>A one-time Lifetime purchase is also offered. It is paid once, it does not renew, and there is nothing to cancel.</p><p>The free trial does not require a card and does not turn into a paid subscription by itself. When it ends, Pro features stop and the alarm keeps working — the alarm and its missions are never behind the paywall. If you buy a subscription while a free trial is running, any unused part of that trial ends at the moment of purchase.</p><p>Items bought with love, the in-app currency earned by waking up, are unlocked for your install. Restore Purchases recovers items bought with real money; love and the items it bought are local to the device.</p><h2>Acceptable use</h2><p>Do not decompile, resell, or redistribute the app, and do not attempt to defeat the mission checks in a modified build.</p><p>The artwork, sounds, characters and code are the property of the developer and may not be extracted or reused.</p><h2>Changes</h2><p>These terms and the privacy policy may change as the app changes. The version in the app you are running always describes that version.</p><nav><a href="index.html">Home</a><a href="faq.html">FAQs</a><a href="privacy.html">Privacy</a><span>Terms</span><a href="support.html">Support</a></nav></div>
 </body>
 </html>

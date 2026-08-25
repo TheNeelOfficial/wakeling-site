@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0D1325">
 <title>Wakeling — the alarm that goes quiet when you get up</title>
-<meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It goes quiet the moment you get up, and a chalk-drawn pet wakes with you and grows a room you decorate.">
+<meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It goes quiet while you are moving, so the fastest way to stop it is to get up. A chalk-drawn pet wakes with you. The alarm is free forever.">
 <link rel="icon" href="icon.webp?v=e1ed1905"><link rel="apple-touch-icon" href="notification-icon.png?v=7ca90ccc">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -128,8 +128,21 @@ a{color:inherit}
    466px void with only 188px on the left. Read as a lopsided page rather than a
    generous one. Slack is now split evenly by the centring instead. */
 .hero{position:relative;z-index:2;min-height:100svh;max-width:78rem;margin:0 auto;
-  padding:2.5rem 1.5rem 4.75rem;display:grid;grid-template-columns:auto auto;
-  justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:center}
+  /* Trimmed top and bottom when the page had to fit a 1366x768 laptop, which
+     is the shortest viewport worth designing for. The bottom still clears the
+     absolutely positioned .foot with room to spare. */
+  /* Top padding in vh for the same reason the gaps around the doodles are:
+     the page is pinned to one screen, so air at the top and air around the
+     drawings are drawn from one budget. This takes what is going spare on a
+     large monitor and leaves a 1440x900 laptop where it was. */
+  padding:clamp(2.4rem,6.4vh,6.5rem) 1.5rem 3.6rem;display:grid;grid-template-columns:auto auto;
+  /* start, not center: the wordmark and the phone begin on the same line.
+     Centring gave the two columns different tops, because they are different
+     heights, and the lockup floated 38px below the top of the device beside
+     it. Aligning the tops also lifts the phone, which lifts the horizon, which
+     lifts the signup group pinned to it — so this buys height rather than
+     costing it. */
+  justify-content:center;gap:clamp(1.75rem,5vw,4.5rem);align-items:start}
 @media(max-width:56rem){
   /* align-content, not align-items. With min-height:100svh and two auto rows,
      the spare height was being handed to the ROWS, which then centred their
@@ -166,7 +179,18 @@ a{color:inherit}
    this layout was accused of. Taking the smaller of the two lets it grow to
    whatever the viewport can actually show and stop there.
    7.25rem is the hero's own vertical padding, which the phone has to share. */
-.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 7.25rem) / 2.11));
+/* The second term is what keeps the phone inside a SHORT viewport: it is the
+   width that makes the mockup fit the height left over after the hero's
+   padding. It has grown twice: to 8.75rem to fit a 1280x720 window, and to
+   8.5rem to pay for the air at the top of the page. That second one is the
+   trade to understand, and it cuts both ways. The page is one screen, so
+   every pixel of top padding has to come from somewhere and the mockup is the
+   only thing with any give. But the mockup also SETS the horizon: a smaller
+   phone lifts the line, and lifting it far enough drops the free promise onto
+   the moon, which is not where it belongs. 8.5rem is where both hold — no
+   scroll at any size, and the promise stays in the space above the line from
+   1440x900 upwards. */
+.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 8.5rem) / 2.11));
   --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
@@ -230,7 +254,7 @@ a{color:inherit}
 .brand{width:clamp(58px,6.5vw,78px);height:auto;border-radius:22.5%;
   margin:0;flex:0 0 auto;box-shadow:0 12px 26px rgba(0,0,0,.38)}
 
-h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
+h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
 /* ── A SHADOW UNDER THE WORDS ──
 
@@ -335,11 +359,87 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
 .signup .hint{color:#000}
 .signup .done{color:var(--onMoon)}
 .signup .picks input:focus-visible{outline-color:var(--onMoon)}
-.lede{font-size:clamp(1.3rem,2.7vw,1.75rem);line-height:1.45;color:var(--muted);
-  margin:0 0 1rem;max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
-.how{font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.5;color:var(--dim);margin:0 0 1.8rem;
-  max-width:34rem;text-shadow:0 2px 12px rgba(0,0,0,.35)}
-@media(max-width:56rem){.lede,.how{margin-left:auto;margin-right:auto}}
+/* The ceiling came down from 1.75rem when the page stopped fitting a 1280x800
+   laptop: at 1.75 this ran to four lines, at 1.6 it runs to three, and three
+   lines of hero is what the rest of the column was budgeted around. */
+.lede{font-size:clamp(1.3rem,2.4vw,1.6rem);line-height:1.42;color:var(--muted);
+  /* The gap that sets the doodles apart from the prose.
+     In vh, not rem, and generous. align() pins the signup group to the
+     horizon, so the space between the promise and the email field is dead
+     space the layout is already paying for: at 1440x900 it is 117px. Growing
+     this gap SPENDS that space rather than adding page height, right up until
+     the pitch reaches the horizon. How much there is to spend scales with the
+     viewport, which is why this does too. Short screens have none, and take
+     the fixed values in the max-height block further down. */
+  margin:0 0 clamp(1rem,6vh,4.5rem);max-width:34rem;
+  text-shadow:0 2px 12px rgba(0,0,0,.35)}
+/* ── THE FOUR STEPS ──
+   A row that becomes two rows when the measure runs out. The arrows are list
+   items too, so they wrap with the steps they sit between instead of stranding
+   one at the end of a line. */
+/* ── ONE ROW, ALWAYS ──
+   nowrap and flex:1 1 0 rather than a fixed item width. The four drawings are
+   a sequence: wrapped onto two lines they stop reading as one, and on a phone
+   a fixed width guaranteed that wrap. The steps share whatever is left after
+   the arrows, so the row fits 320px and 1440px by the same rule.
+
+   min-width:0 is what lets them actually shrink. A flex item's floor is its
+   content by default, so without it the labels hold the row wide and it
+   overflows instead of tightening.
+
+   Labels align at flex-start, so a caption that wraps to two lines drops its
+   own text without moving the drawing above it or the three beside it. */
+/* The MEASURE OF THE PROSE, not of the column.
+   The column is as wide as the signup row (714px at 1366), the paragraphs are
+   34rem inside it, and centring the row in the column parked it 109px to the
+   right of the text it belongs to. Matching the prose measure and its left
+   edge puts the four drawings under the sentence they illustrate, spread
+   evenly across it. */
+.steps{list-style:none;display:flex;flex-wrap:nowrap;align-items:flex-start;
+  justify-content:center;gap:.3rem;margin:0 0 clamp(.7rem,4.5vh,3.5rem);padding:0;
+  max-width:min(34rem,100%);color:var(--muted)}
+.steps li{display:flex;flex-direction:column;align-items:center;gap:.35rem;
+  flex:1 1 0;min-width:0;text-align:center}
+.steps li svg{width:38px;height:38px;display:block;opacity:.92}
+.steps li span{font-size:.84rem;line-height:1.2}
+/* The arrow is not a step, so it neither grows nor claims a label's width. */
+.steps li.arrow{flex:0 0 auto;align-self:flex-start;margin-top:.6rem;opacity:.5}
+.steps li.arrow svg{width:17px;height:17px}
+@media(max-width:56rem){.lede,.free,.steps{margin-left:auto;margin-right:auto}}
+/* Tighter again where the row is narrowest, so four drawings and three arrows
+   still fit a 320px phone without the labels forcing a scrollbar. */
+@media(max-width:26rem){
+  .steps{gap:.15rem}
+  .steps li svg{width:32px;height:32px}
+  .steps li span{font-size:.75rem}
+  .steps li.arrow svg{width:13px;height:13px}
+}
+/* Brighter than the note under it and heavier, so the promise reads at a
+   glance without a box round it. It lives inside .signup, so it is already on
+   the moon and already dark. */
+/* Brighter than the prose above it, because it is the one promise on the page
+   worth reading twice. Same shadow as its neighbours: it is in space now. */
+.free{font-size:clamp(1rem,1.8vw,1.16rem);line-height:1.35;font-weight:700;
+  color:var(--ink);margin:0 0 .2rem;max-width:min(34rem,100%);text-align:center;
+  text-shadow:0 2px 12px rgba(0,0,0,.35)}
+/* Set by align() when this line falls below the horizon, which happens on
+   short viewports. Same ink the signup group uses on the same ground. */
+.free.onMoon{color:#000;text-shadow:none}
+
+/* ── VERY SHORT VIEWPORTS ──
+   Under about 672px of usable height the page has nothing left to spend, and
+   the one-screen rule outranks the breathing room around the doodles. 1366x768
+   sits just above this line and keeps the generous spacing; a 1280x720 window,
+   where the browser leaves only 633px, takes the tight version. */
+/* Raised from 42rem: a 1366x768 laptop leaves 681px and a 1280x800 leaves
+   713px, and at both the pitch already reaches the horizon, so there is
+   nothing to spend. Above this the dead space appears and the clamps above
+   take over. */
+@media(max-height:46rem){
+  .hero{padding-top:1.4rem}
+  .lede{margin-bottom:1.05rem}
+  .steps{margin-bottom:.75rem}
+}
 
 /* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
    Stacked, the illustration sits at the top and the whole text column falls
@@ -362,7 +462,11 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
      token is scoped to .signup. */
   .lockup h1{color:#000;text-shadow:none}
   .lede{color:#000;text-shadow:none}
-  .how{color:#000;text-shadow:none}
+  /* The doodle strokes are currentColor, so this inks the drawings and their
+     labels together. On a phone this whole column is on the moon. */
+  .steps{color:#000}
+  .steps li svg{opacity:1}
+  .free{color:#000;text-shadow:none}
 }
 
 
@@ -507,7 +611,7 @@ h1{font-size:clamp(3.4rem,10vw,6.2rem);line-height:.95;margin:0;font-weight:700;
   align-items:center;justify-content:center;text-align:center}
 
 /* ── FOOT ──────────────────────────────────────────────────────────────── */
-.foot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:1.2rem 1.5rem;
+.foot{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:.95rem 1.5rem;
   display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;font-size:1.1rem;
   color:var(--dim);text-shadow:0 2px 10px rgba(0,0,0,.4)}
 .foot a{text-decoration:none;border-bottom:1px solid rgba(255,244,232,.3)}
@@ -570,28 +674,122 @@ body.docpage{background:var(--paper);color:var(--dark)}
     <div class="phone">
       <video src="phone.mp4?v=e791102a" poster="phone.webp?v=d03896c4" width="540" height="1174" class="screen" autoplay loop muted playsinline preload="metadata" aria-label="Wakeling in use: the alarm is set and Carrot the corgi curls up to sleep, then the alarm is switched off and he wakes up again"></video>
     </div>
-    <div>
+    <div class="pitch">
       <div class="lockup">
         <img src="icon.webp?v=e1ed1905" width="512" height="512" class="brand" alt="The Wakeling app icon: Carrot the corgi">
         <h1>Wakeling</h1>
       </div>
-      <p class="lede">The alarm that goes quiet the moment you actually get out of
-      bed — so it stops without waking the whole house.</p>
-      <!-- Two sentences doing two jobs: the first is the deal, the second is
-           the reason to keep it. The page was all mechanism and no pet, which
-           is the half people actually stay for.
+      <!-- ── THE PET LEADS, AND THE QUIET IS A BEHAVIOUR NOT A MOMENT ──
 
-           "brings you something" is lifted from the gift popup rather than
-           invented, so the promise here is the sentence they meet on their
-           first morning. Deliberately not "earn treats": the currency is love
-           now, it was treats two renames ago, and a landing page that teaches
-           vocabulary before the app does is a landing page nobody finishes.
+           The old lede was "goes quiet the moment you actually get out of
+           bed", which was mechanism-only and, worse, described the wrong
+           shape. It is not a moment. Movement ducks the volume to nothing and
+           STILLNESS BRINGS IT BACK, so it stays quiet only while you keep
+           going. That distinction is the product: it is why the fastest way to
+           stop the noise is the thing you were supposed to do anyway, and it
+           is why lying still and waiting it out does not work.
 
-           One word longer than what it replaced. The brief was to say more,
-           not to write more. -->
-      <p class="how">No snooze — get up and finish a short mission. A chalk-drawn
-      pet wakes with you, brings you something, and grows a room you decorate
-      together.</p>
+           The pet is in the first sentence now. It was two paragraphs down,
+           which meant the page opened on an alarm clock and the reason anybody
+           stays was below the fold.
+
+           No dashes anywhere in this column, per Nick. -->
+      <p class="lede">An alarm you cannot snooze, and a pet who wakes when you
+      do. It goes quiet while you move, so the fastest way to stop it is to
+      get up.</p>
+      <!-- ── THE SHAPE OF A MORNING, DRAWN ──
+
+           This was a paragraph explaining the loop in prose. Four steps in a
+           row is the thing prose was describing, and it is read at a glance
+           instead of a sentence at a time.
+
+           Drawn rather than illustrated with an icon set: everything else on
+           this page is hand-made, and a tidy vector clock beside a chalk corgi
+           would look borrowed. Uneven stroke widths and paths that overshoot
+           their corners are deliberate.
+
+           currentColor throughout, so the whole group takes the ink of
+           whatever ground it lands on. That is the same rule the prose above
+           follows, and it is why this survives the phone layout where the
+           column crosses onto the moon. -->
+      <ol class="steps">
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true" fill="none"
+               stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+               stroke-linejoin="round">
+            <circle cx="24" cy="28" r="13.4"/>
+            <path d="M13.6 15.2 L9.4 11.4"/><path d="M34.6 15.4 L38.8 11.6"/>
+            <circle cx="8" cy="9.6" r="3.6"/><circle cx="40.2" cy="9.8" r="3.6"/>
+            <path d="M24 20.4 L24.2 28.2 L29.8 30.6"/>
+          </svg>
+          <span>set alarm</span>
+        </li>
+        <li class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12.2 L19 11.8"/><path d="M13.4 6.4 L19.2 11.9 L13.2 17.4"/>
+          </svg>
+        </li>
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true" fill="none"
+               stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+               stroke-linejoin="round">
+            <circle cx="24" cy="28" r="11.6"/>
+            <path d="M24 21.6 L24.2 28.2 L29 30.4"/>
+            <path d="M7.4 20.6 Q3.2 28 7.6 35.6"/>
+            <path d="M40.6 20.4 Q44.8 28 40.4 35.8"/>
+            <path d="M13.8 15.4 L10 11.8"/><path d="M34.4 15.6 L38.2 12"/>
+          </svg>
+          <span>it rings</span>
+        </li>
+        <li class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12.2 L19 11.8"/><path d="M13.4 6.4 L19.2 11.9 L13.2 17.4"/>
+          </svg>
+        </li>
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true" fill="none"
+               stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+               stroke-linejoin="round">
+            <circle cx="26.6" cy="9.8" r="4.2"/>
+            <path d="M26.2 14.4 L24.8 27.2"/>
+            <path d="M24.8 27.2 L18.4 38.6"/><path d="M25.4 26.4 L32.6 36.4"/>
+            <path d="M25.8 18.6 L17.4 22.4"/><path d="M26 18.2 L34.2 14.6"/>
+            <path d="M8.4 40.2 L14.2 40"/>
+          </svg>
+          <span>finish the mission</span>
+        </li>
+        <li class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12.2 L19 11.8"/><path d="M13.4 6.4 L19.2 11.9 L13.2 17.4"/>
+          </svg>
+        </li>
+        <li>
+          <svg viewBox="0 0 48 48" aria-hidden="true" fill="none"
+               stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+               stroke-linejoin="round">
+            <circle cx="24" cy="24" r="14.2"/>
+            <path d="M16.6 24.4 L21.8 30 L32.2 17.8"/>
+          </svg>
+          <span>it stops</span>
+        </li>
+      </ol>
+      <!-- ── UNDER THE DOODLES, CENTRED ON THEM ──
+
+           It has been in three places. Inside the signup group it added its
+           own height to the bottom of the page and cost 46px of scroll on a
+           1280x800 laptop. Under the lede it was safe but detached from
+           anything. Here it closes the sequence it belongs to: set, ring,
+           move, stop, and it costs you nothing.
+
+           Same measure and left edge as the row above, with the text centred
+           inside it, so it lines up with the four drawings rather than with
+           the paragraph. Watch the horizon if this ever moves again: at
+           1366x768 an earlier draft crossed it by four pixels and turned
+           cream on grey. -->
+      <p class="free">The alarm is free forever, and always will be.</p>
       <div class="signup" id="signup">
       <form class="cta" id="notifyForm" novalidate>
         <input type="email" name="email" id="notifyEmail" required autocomplete="email"
@@ -608,8 +806,10 @@ body.docpage{background:var(--paper);color:var(--dark)}
         <button type="submit">Tell me when it is out</button>
       </form>
       <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
-      <p class="soon" id="notifyNote">iOS first, Android later — one email the day
-      yours is ready.<br>Nothing else, and you can unsubscribe.</p>
+      <!-- One line, not two. This note sits below the horizon, so every line
+           of it is a line of page height on a short laptop. -->
+      <p class="soon" id="notifyNote">iOS first, Android later. One email when
+      yours is ready, nothing else, and you can unsubscribe.</p>
       <p class="done">Thank you — we will email you when it is ready.</p>
       </div>
     </div>
@@ -662,6 +862,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
   var room = document.querySelector(".room");
   var vid = document.querySelector(".phone .screen");
   var signup = document.getElementById("signup");
+  var free = document.querySelector(".free");
   if (!room || !vid) return;
 
   function horizonNow(){
@@ -674,6 +875,7 @@ body.docpage{background:var(--paper);color:var(--dark)}
     // Cleared first, or each pass adds to the last and walks the form down the
     // page a little more on every resize.
     if (signup) signup.style.marginTop = "";
+    if (free) free.style.marginTop = "";
 
     var h = horizonNow();
     if (!h.ok) return;                                    // not laid out yet
@@ -691,13 +893,16 @@ body.docpage{background:var(--paper);color:var(--dark)}
        Each pass closes half the remaining gap, so the sequence is 16, 8, 4, 2,
        1 — four passes left it 4px short. Ten is comfortably past the
        half-pixel exit and costs nothing: the loop stops the moment it lands. */
-    if (signup && matchMedia("(min-width: 56.0625rem)").matches) {
+    var wide = matchMedia("(min-width: 56.0625rem)").matches;
+    function seatSignup(){
+      if (!signup || !wide) return;
       /* Landing the group's TOP exactly on the horizon is not enough: the
          email field's own top edge then touches the line, so it reads as
          sitting in the space rather than on the moon. CLEARANCE drops it far
          enough that the whole control is unambiguously on the grey. */
-      var CLEARANCE = 22;
+      var CLEARANCE = 16;
       var push = 0;
+      signup.style.marginTop = "";
       for (var i = 0; i < 10; i++) {
         var cur = horizonNow();
         var delta = cur.y + CLEARANCE - (signup.getBoundingClientRect().top - cur.top);
@@ -705,12 +910,57 @@ body.docpage{background:var(--paper);color:var(--dark)}
         push += delta;
         signup.style.marginTop = push + "px";
       }
-      h = horizonNow();
     }
+
+    /* ── KEEP THE PROMISE OFF THE HORIZON ──
+
+       The prose is inked for space and the form for the moon. The free line is
+       the only thing that can land on either, and at 1440x900 it landed on
+       BOTH: its bottom sat one pixel past the line, so half the sentence was
+       on dark and half on grey and no colour could read across it.
+
+       Nudged wholly onto the moon rather than pulled back into space, because
+       pulling it up would eat the gap under the doodles.
+
+       ITERATED for the same reason the form is: seating the form moves the
+       horizon, so a nudge measured before it is stale by the time it lands. A
+       first attempt did exactly that, applied 28px against a horizon of 412,
+       and left the line straddling a horizon that had become 440. Each pass
+       re-seats the form and re-measures, and it stops the moment the line is
+       clear. */
+    for (var pass = 0; pass < 5; pass++) {
+      seatSignup();
+      var cur2 = horizonNow();
+      if (!free || !wide) break;
+      var fb = free.getBoundingClientRect();
+      var fTop = fb.top - cur2.top, fBot = fb.bottom - cur2.top;
+      if (!(fTop < cur2.y && fBot > cur2.y)) break;
+      var have = parseFloat(free.style.marginTop) || 0;
+      free.style.marginTop = (have + (cur2.y - fTop) + 4) + "px";
+    }
+    h = horizonNow();
 
     room.style.setProperty("--horizon", h.y + "px");
     // The scale the room art is drawn at, so page and phone textures match.
     room.style.setProperty("--roomW", h.w + "px");
+
+    /* ── THE ONE LINE THAT CAN LAND ON EITHER GROUND ──
+
+       The prose sits in space and the form sits on the moon, and both are
+       inked for where they are. The free line is the only thing between them,
+       so which side of the horizon it falls on depends on the viewport: at
+       1280x720 it is on the grey, at 1366x768 and everything taller it is in
+       the space above it. Cream on that grey is the contrast failure the
+       stylesheet works hard to avoid elsewhere.
+
+       Tuning the spacing until it happened to clear would hold only until the
+       next copy change. The horizon is already measured here, so ask. */
+    if (free) {
+      /* The top edge, not the bottom: after the nudge above, the whole line is
+         on one side of the horizon, and the top is what says which. */
+      var ft = free.getBoundingClientRect().top - h.top;
+      free.classList.toggle("onMoon", ft >= h.y);
+    }
   }
 
   align();
