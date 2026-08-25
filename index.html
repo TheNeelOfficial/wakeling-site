@@ -436,9 +436,12 @@ h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
    nothing to spend. Above this the dead space appears and the clamps above
    take over. */
 @media(max-height:46rem){
-  .hero{padding-top:1.4rem}
-  .lede{margin-bottom:1.05rem}
-  .steps{margin-bottom:.75rem}
+  /* Tightened again when the signup note went back to two lines. That line is
+     below the horizon, so it is pure page height here, and a 1280x720 window
+     leaves only 633px to spend. */
+  .hero{padding-top:1rem}
+  .lede{margin-bottom:.8rem}
+  .steps{margin-bottom:.55rem}
 }
 
 /* ── ON A PHONE, EVERYTHING BELOW THE PHONE IS ON THE MOON ──
@@ -789,7 +792,10 @@ body.docpage{background:var(--paper);color:var(--dark)}
            the paragraph. Watch the horizon if this ever moves again: at
            1366x768 an earlier draft crossed it by four pixels and turned
            cream on grey. -->
-      <p class="free">The alarm is free forever, and always will be.</p>
+      <!-- The one line on the page with no full stop. It is a promise rather
+           than a sentence, and the stop made it read as one more thing being
+           explained. Everything else keeps its punctuation. -->
+      <p class="free">The alarm is free forever, and always will be</p>
       <div class="signup" id="signup">
       <form class="cta" id="notifyForm" novalidate>
         <input type="email" name="email" id="notifyEmail" required autocomplete="email"
@@ -806,10 +812,14 @@ body.docpage{background:var(--paper);color:var(--dark)}
         <button type="submit">Tell me when it is out</button>
       </form>
       <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
-      <!-- One line, not two. This note sits below the horizon, so every line
-           of it is a line of page height on a short laptop. -->
-      <p class="soon" id="notifyNote">iOS first, Android later. One email when
-      yours is ready, nothing else, and you can unsubscribe.</p>
+      <!-- Two lines again.
+           It was collapsed to one to buy vertical space on a short laptop,
+           which worked and cost something worse: as a single run it was the
+           widest thing in the column, so it set the column's width and pulled
+           the whole group off centre against the prose above it. Height is
+           bought elsewhere now. -->
+      <p class="soon" id="notifyNote">iOS first, Android later.<br>One email
+      when yours is ready, nothing else, and you can unsubscribe.</p>
       <p class="done">Thank you — we will email you when it is ready.</p>
       </div>
     </div>
