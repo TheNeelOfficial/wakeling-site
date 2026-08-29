@@ -306,12 +306,21 @@ a{color:inherit}
    line that says the alarm has a task attached, which is the product. */
 .dChip{position:absolute;left:40%;right:7%;top:25.4%;text-align:center;opacity:1;
   color:var(--love)}
-/* An ELLIPSE, not a pill: the app draws an oval around the word, which is why a
-   999px radius looked wrong however the padding was tuned. And a paw before it,
-   which was missing entirely. */
-.dChip span{display:inline-flex;align-items:center;gap:.34em;
-  border:1px solid currentColor;border-radius:50%/50%;
-  padding:.30em 1.05em .34em;font-size:calc(var(--dS) * .62);opacity:.95}
+/* ── THE RING IS DRAWN, NOT A BORDER ──
+   A border-radius ellipse is mathematically perfect, and that is exactly what
+   was wrong with it: everything else on this screen is drawn by hand, so one
+   flawless oval read as a UI control dropped into a sketch.
+
+   So it is a stroked path with the wobble left in — the curve is deliberately
+   not symmetrical, and neither is the app's. Stretched with
+   preserveAspectRatio=none so one path fits whatever the word needs, which also
+   means the line thins slightly on the long sides, exactly as a real pen stroke
+   does when you draw a wide oval in one go. */
+.dChip span{position:relative;display:inline-flex;align-items:center;gap:.34em;
+  padding:.34em 1.15em .38em;font-size:calc(var(--dS) * .62);opacity:.95}
+/* Out-specifies the paw's own svg rule, which was sizing this to .92em and
+   dropping it into the flex row as a little circle beside the word. */
+.dChip .dRing{position:absolute;inset:0;width:100%;height:100%;margin:0}
 .dChip svg{width:.92em;height:.92em;margin-top:-.06em}
 /* ── THE CLOCK MOVES ──
    The recording's whole point was that you watch an alarm being set. A still
