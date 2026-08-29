@@ -336,15 +336,15 @@ a{color:inherit}
      size is rejected outright by some parsers, and a dropped mask on a filled
      box leaves a solid rectangle rather than a chip. Longhands degrade one
      property at a time. */
-  -webkit-mask-image:url(demo/item/mission-ring.webp);
-  mask-image:url(demo/item/mission-ring.webp);
+  -webkit-mask-image:url(demo/item/mission-ring.png);
+  mask-image:url(demo/item/mission-ring.png);
   -webkit-mask-size:100% 100%; mask-size:100% 100%;
   -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
   -webkit-mask-position:center; mask-position:center}
 /* And if masking is unavailable entirely, fall back to painting the artwork
    itself — its own colours, but present, which beats an empty space. */
-@supports not (mask-image: url(x.webp)){
-  .dChip::after{background:url(demo/item/mission-ring.webp) center/100% 100% no-repeat}
+@supports not (mask-image: url(x.png)){
+  .dChip::after{background:url(demo/item/mission-ring.png) center/100% 100% no-repeat}
 }
 /* ── THE CLOCK MOVES ──
    The recording's whole point was that you watch an alarm being set. A still
