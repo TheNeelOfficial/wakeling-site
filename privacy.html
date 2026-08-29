@@ -7,7 +7,7 @@
 <title>Privacy Policy — Wakeling</title>
 
 <link rel="icon" href="icon.webp?v=e1ed1905"><link rel="apple-touch-icon" href="notification-icon.png?v=7ca90ccc">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Slackey&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Straight from the app's dawn room. */
@@ -17,6 +17,8 @@
      footer and a mismatched tint above the space. */
   --space:#0D1325; --floor:#827F86;
   --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
+  --onInk:#241B20; --edge:rgba(255,244,232,.28); --edgeOn:rgba(255,244,232,.55);
+  --tint:rgba(255,244,232,.07);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
@@ -95,28 +97,310 @@ a{color:inherit}
    This cannot disturb the horizon: --horizon is set in PIXELS from the room's
    top, measured off the video, so growing the room DOWNWARD does not move it.
    The extra height is floor, which is exactly what belongs below the floor. */
-.room{position:relative;min-height:100svh;min-height:100lvh;overflow:hidden;
+.room{color:var(--ink);position:relative;min-height:100svh;min-height:100lvh;overflow:hidden;
   background:var(--floor);
   --s:calc(100svh / 640);--horizon:60.9%;--roomW:305px;
-  --skirtH:calc(var(--roomW) * 45 / 1125)}
+  --skirtH:calc(var(--roomW) * var(--skirtPt,15) / 430)}
 /* Each half carries its own colour UNDER its texture, so a failed image
    degrades to the right half of the room instead of to whatever the room's
    single base happens to be. Written in the shorthand deliberately: the
    background shorthand resets background-color, so declaring the image alone
    would quietly throw the colour away. */
-.wall{position:absolute;left:0;right:0;top:0;height:var(--horizon);
-  background:var(--space) url(art/moon-wall.webp) repeat;
-  background-size:calc(var(--roomW) * 600 / 1125) auto}
+/* ── THE ROOM IS A VARIABLE NOW ──
+   Each layer takes its art and tile width from a custom property so the room
+   switcher can repaint the page and the phone's screen from one place. The moon
+   values remain the declared fallbacks, so the page is correct before any script
+   runs and correct with no script at all. */
+/* ── THE PAGE'S GROUND STARTS WHERE THE PHONE'S GROUND STARTS ──
+   --horizon is the wall/floor line, but inside the phone that line is not where
+   the ground becomes visible: the scenery band sits across it, so the grass, the
+   sand, the pavement all begin BELOW it — 46.7% of the band's height below,
+   since the band straddles the line with 53.3% of itself above.
+
+   The page has no band, so matching --horizon put its grass level with the
+   phone's waterline instead of with the phone's grass. Dropping the page's
+   ground by the same amount lines up what you actually see: sky against sky,
+   ground against ground, with the scenery sitting on the join inside the phone
+   where it belongs. */
+.room{--groundDrop:calc(var(--roomW) * var(--skirtPt,15) / 430 * 0.467)}
+.wall{position:absolute;left:0;right:0;top:0;
+  height:calc(var(--horizon) + var(--groundDrop));
+  background:var(--space) var(--wallImg,url(art/moon-wall.webp)) repeat;
+  /* In POINTS, the same as the phone: --roomW is the phone's rendered
+     width and the phone is 430pt across, so one point is roomW/430.
+     Sizing the height with auto instead let the art's own aspect decide,
+     and the page's planks came out about a seventh taller than the same
+     planks inside the phone. */
+  background-size:calc(var(--roomW) * var(--tileWpt,200) / 430)
+                  calc(var(--roomW) * var(--tileHpt,300) / 430)}
 /* The rocky band straddles the horizon rather than sitting under it. Its own
    art turns from space to moon 53.3% of the way down (row 24 of 45, measured),
    so lifting it by that much puts ITS grey exactly on the horizon — which is
    the line the video's grey has to meet. */
-.skirt{position:absolute;left:0;right:0;height:var(--skirtH);
-  top:calc(var(--horizon) - (var(--skirtH) * 0.533));
-  background:url(art/moon-skirting.webp) repeat-x;background-size:var(--roomW) 100%}
-.floor{position:absolute;left:0;right:0;top:var(--horizon);bottom:0;
-  background:var(--floor) url(art/moon-floor.webp) repeat;
-  background-size:var(--roomW) auto}
+/* ── THE BAND BELONGS TO THE PHONE ──
+   The skirting is a scene element, not a texture: the park's hedge, Down
+   Under's harbour skyline, Venice's rooftops. Drawn on the page as well it
+   appears twice, and the two can never quite agree — the page's copy is scaled
+   to the room while the phone's is scaled to the screen, so the hedge lands at
+   one height outside the phone and a slightly different one inside it, which
+   reads as a misalignment rather than as scenery.
+
+   So the page keeps only the two flat halves, wall and floor, meeting on the
+   horizon, and every piece of scenery lives inside the phone where it belongs.
+   The line then cannot disagree with itself, because there is only one of it. */
+.skirt{display:none}
+.floor{position:absolute;left:0;right:0;
+  top:calc(var(--horizon) + var(--groundDrop));bottom:0;
+  /* ── ONE COPY ACROSS, NOT A TILE ──
+     Repeating this sideways always left a faint line at the join, and
+     mirroring it, trimming the duplicated edge columns and rounding the tile
+     to whole pixels each failed to hide it. So the repeat is removed rather
+     than disguised: one copy stretched the full width, and there is no join
+     left to see.
+
+     Only safe because of WHAT this art is. A floor here is horizontal bands —
+     planks, regolith, sand — so stretching it sideways moves nothing the eye
+     tracks. The plank HEIGHT is what has to agree with the phone, and that is
+     still set in the app's own points, so the two floors still meet along the
+     horizon.
+
+     repeat-y, because the room grows downward past the viewport on short
+     windows and the floor has to keep going. */
+  background:var(--floor) var(--floorImg,url(art/moon-floor.webp)) repeat-y;
+  background-size:100% calc(var(--roomW) * var(--plankPt,200) / 430)}
+/* ── THE INTERACTIVE DEMO ───────────────────────────────────────────────
+   The phone used to hold a screen recording: one room, one pet, no way to
+   see the other eight rooms or three pets. Those are most of what is being
+   sold, and they were invisible.
+
+   So the screen is composed here from the app's OWN art, layered in the
+   app's own order — wall, window, floor, skirting, mat, pet — and the
+   switcher below repaints it. Because the page's room reads the same custom
+   properties, changing the room changes the whole page with it.
+
+   The pet is alpha video so it sits on whatever room is behind it. Two
+   encodes, because no single codec covers every browser: VP9-in-WebM for
+   Chrome and Firefox, HEVC-in-MP4 for Safari, both listed as <source>. */
+/* The screen used to be a <video>, whose width/height attributes gave the phone
+   its shape. A div has no intrinsic size, so the ratio has to be stated or the
+   whole phone collapses to nothing. 540x1174 is the recording's own frame. */
+.screen{position:relative;overflow:hidden;width:100%;aspect-ratio:540/1174;
+  border-radius:calc(var(--pw) * .125);
+  background:var(--dScreenWall,#0D1325);
+  --dHorizon:60.9%;
+  --dS:calc(var(--pw) / 15)}
+/* 60.9% is VIDEO_HORIZON, the line the page's own room is aligned to. The two
+   MUST read the same number or the phone looks pasted onto the page: the app's
+   FLOOR_TOP is 0.6, but the recording this page was built around put the line at
+   715/1174 once the status bar is counted, and the page has been aligned to that
+   ever since. */
+.dWall{position:absolute;left:0;right:0;top:0;height:var(--dHorizon);
+  background:var(--dScreenWall) var(--dWallImg) repeat;
+  background-size:var(--dTileW) var(--dTileH)}
+.dWin{position:absolute;left:10.9%;top:17.1%;width:23.8%;
+  aspect-ratio:100/133;background:var(--dWinImg) center/100% 100% no-repeat}
+.dFloor{position:absolute;left:0;right:0;top:var(--dHorizon);bottom:0;
+  background:var(--dScreenFloor) var(--dFloorImg) repeat-y;
+  background-size:100% var(--dPlankH)}
+.dSkirt{position:absolute;left:0;right:0;
+  top:calc(var(--dHorizon) - var(--dSkirtH) * 0.533);height:var(--dSkirtH);
+  background:var(--dSkirtImg) repeat-x;background-size:100% 100%}
+/* Furniture straddles the horizon: its lid is above the line and its base
+   below, which is what plants it on the floor rather than standing it on the
+   line. Measured off the recording. */
+.dTable{position:absolute;right:var(--dTableRight);top:var(--dTableTop);
+  width:24.8%;height:12.25%;
+  background:var(--dTableImg) center/100% 100% no-repeat}
+/* The clock stands ON the lid: CLOCK_ON_TABLE across it, and its FEET on the
+   surface, which sit CLOCK_FOOT of the way down its own artwork. */
+/* ── THE CLOCK STANDS UP WHEN THE ALARM IS SET ──
+   Not a ring, a TOPPLE. In the app, standing the clock up is how you arm the
+   alarm and knocking it over is how you cancel it — the gesture is the setting,
+   which is why the room needs no switch. So the clock is upright exactly while
+   an alarm is armed and lies on its face the rest of the time.
+
+   ONE piece of artwork, rotated, never two stills: a swap between drawings pops,
+   a rotation falls. A full quarter turn, because that is where the round body
+   actually meets the table when it pivots on its foot — stopping short leaves it
+   hovering. And it pivots on its LEFT FOOT, not its centre or a corner, since
+   the ink stops well inside the box and rotating about the corner swings it
+   through the tabletop on the way down.
+
+   All four numbers are the app's own: TIPPED_ANGLE, CLOCK_PIVOT_X, CLOCK_FOOT
+   and the 7 degrees it rocks back on impact. */
+.dClockObj{transform-origin:19.17% 95.08%;transform:rotate(-90deg);
+  transition:transform .30s cubic-bezier(.33,1.5,.6,1)}
+.armed .dClockObj{transform:rotate(0deg);
+  transition:transform .21s cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion:reduce){.dClockObj{transition:none}}
+.dClockObj{position:absolute;left:var(--dClockLeft);top:var(--dClockTop);
+  width:8%;height:4.65%;
+  background:var(--dClockImg) bottom/100% 100% no-repeat}
+/* Centred, and IN FRONT of the pet — the app puts it at the paw line where he
+   can reach it, not behind him. */
+.dBowl{position:absolute;left:50%;transform:translateX(-50%);
+  top:var(--dBowlTop,82.3%);width:9.9%;height:2.6%;
+  background:var(--dBowlImg) center/100% 100% no-repeat}
+.dMat{position:absolute;left:50%;transform:translateX(-50%);
+  width:67.5%;aspect-ratio:265/115;bottom:var(--dMatBottom,12.9%);
+  background:var(--dMatImg,url(demo/mat.webp)) center/100% 100% no-repeat}
+/* ── EVERY PET IS SIZED FROM ITS OWN FIT ──
+   The clips are not one shape. Carrot's canvas is 792x688 at scale 1.0; the
+   other three are 16:9 at scale 1.34 to 1.53, because their art sits in more
+   transparent margin. Drawing them all at one width makes three of them the
+   wrong size, which is what a single 42% did.
+
+   placeCarrot's numbers, then: width is CARROT_WIDTH * scale against a 390pt
+   screen, and every pet's canvas BOTTOM lands on canvasBottom — floorTop +
+   floorHeight * (1 - CARROT_UP_THE_FLOOR). Their paw lines then agree to within
+   a fifth of a percent, which is why one mat position suits all four. */
+.dPet{position:absolute;bottom:var(--dPetBottom,18%);
+  left:calc(50% + var(--dPetNudge,0%));transform:translateX(-50%);
+  width:var(--dPetW,42%);display:block}
+/* The app's chrome, rebuilt rather than baked into an image so it stays crisp
+   at any size and can be corrected without a re-record. */
+/* The screen's own chrome takes the same luminance decision as the page:
+   cream on a night room, the app's dark ink on a daylit one. */
+.dUi{position:absolute;inset:0;pointer-events:none;
+  font-family:var(--font);color:var(--dInk,#FFF4E8)}
+/* ── EVERY POSITION MEASURED OFF THE RECORDING ──
+   The clock, its sub-line and the mission chip are NOT centred on the screen.
+   They sit in a column to the right of the window, because the window is on the
+   left and the app lays the two out side by side. Centring them was the single
+   biggest reason this screen did not read as the app: the clock sat over the
+   Earth instead of beside it.
+
+   Read off a gridded frame rather than judged by eye. Column centre 65%, and
+   the whole group about five percent lower than I first had it.
+
+   ── THE TOP BAR, COPIED NOT INVENTED ──
+   A SOLID heart, not an outline: the app draws it filled, and in the same rose
+   as the clock, so love reads as one idea wherever it appears. The count starts
+   at zero because a landing page showing 860 is showing somebody else's
+   progress — an empty count is what a new user actually sees, and the pet is
+   what fills it.
+
+   The three dots on the right are the app's own control. Leaving them out made
+   the screen look like a mockup of the app rather than the app. */
+.dLove{position:absolute;left:7.3%;top:3.6%;display:flex;align-items:center;
+  gap:calc(var(--dS) * .34);color:var(--love);font-size:calc(var(--dS) * .78)}
+.dLove svg{width:calc(var(--dS) * .86);height:calc(var(--dS) * .86)}
+.dMenu{position:absolute;right:11%;top:4.2%;color:var(--love);opacity:.9}
+.dMenu svg{width:calc(var(--dS) * .74);height:calc(var(--dS) * .74)}
+.dClock{position:absolute;left:40%;right:7%;top:13.6%;
+  display:flex;align-items:center;justify-content:center;gap:.16em;
+  font-family:'Slackey',var(--font);font-size:calc(var(--dS) * 1.62);
+  /* Never wraps. Sized so the whole string spans the same 46% of the screen
+     it does in the app; at the old size it overflowed its column and the
+     minutes dropped onto a second line. */
+  white-space:nowrap;
+  /* HOLLOW, which is the app's own word for it: theme.ts calls the alarm time
+     hollow so it belongs to the wall rather than to the UI. Filling it in made
+     the clock the loudest thing on the screen, which is the opposite of what
+     that decision is for. Transparent centre, stroked edge. */
+  color:transparent;-webkit-text-stroke:calc(var(--dS) * .05) var(--love);
+  letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.dSub{position:absolute;left:40%;right:7%;top:22.0%;text-align:center;
+  font-size:calc(var(--dS) * .72);opacity:.86}
+/* The mission chip. The recording had it and it is not decoration: it is the
+   line that says the alarm has a task attached, which is the product. */
+.dChip{position:absolute;left:40%;right:7%;top:25.4%;text-align:center;opacity:1;
+  color:var(--love)}
+/* An ELLIPSE, not a pill: the app draws an oval around the word, which is why a
+   999px radius looked wrong however the padding was tuned. And a paw before it,
+   which was missing entirely. */
+.dChip span{display:inline-flex;align-items:center;gap:.34em;
+  border:1px solid currentColor;border-radius:50%/50%;
+  padding:.30em 1.05em .34em;font-size:calc(var(--dS) * .62);opacity:.95}
+.dChip svg{width:.92em;height:.92em;margin-top:-.06em}
+/* ── THE CLOCK MOVES ──
+   The recording's whole point was that you watch an alarm being set. A still
+   clock makes the phone look like a screenshot, so the minutes roll and the
+   line under them follows, on the same loop the recording had. */
+/* ── HOURS AND MINUTES ON ONE LINE ──
+   The minutes live in an overflow:hidden inline-block so they can roll, and such
+   a box takes its BASELINE from its bottom edge rather than from the text
+   inside. Sat next to plain text it therefore rode high, and the minutes sat
+   above the hours.
+
+   So the clock is a flex row and every part is one em tall: they align by their
+   boxes, and where the baseline falls stops mattering. */
+.dRoll{display:block;overflow:hidden;height:1em}
+.dNum,.dSep{display:block;height:1em;line-height:1em}
+.dSep{margin-top:-.06em}
+.dRoll b{display:block;font-weight:inherit;line-height:1em;
+  transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.dRoll b i{display:block;font-style:normal;height:1em;line-height:1em}
+.dSub,.dChip{transition:opacity .32s ease}
+.dTabs{position:absolute;left:0;right:0;bottom:3.4%;display:flex;
+  color:var(--dInkFloor,#FFF4E8);
+  justify-content:center;gap:calc(var(--dS) * 2.4);font-size:calc(var(--dS) * .72);
+  opacity:.9}
+
+/* ── THE SWITCHER ── */
+/* Under the phone, in the phone's own column, so it reads as controls FOR the
+   phone rather than as a third thing in the hero. */
+.phoneCol{display:flex;flex-direction:column;align-items:center}
+.tryBar{margin-top:calc(10 * var(--s));display:flex;
+  gap:0;align-items:center;justify-content:center;flex-wrap:wrap}
+/* ── TWO STEPPERS, AND NOTHING ELSE ──
+   This control has been a shuffle, then thirteen pills, then thirteen swatches.
+   The swatches showed the whole range, which was the right instinct and the
+   wrong weight: thirteen circles under the phone is more furniture than a
+   landing page can carry, and it competed with the thing it was meant to be
+   showing off.
+
+   So it is down to the smallest thing that still does the job. A name says
+   WHICH room you are looking at, which the shuffle never did. Two chevrons let
+   you go forward and back, so nothing is unreachable and you can return to one
+   you liked. And it reads as one quiet line of type rather than as a widget.
+
+   What is lost is seeing all nine at once. The wheel already walks them, and
+   the room behind the phone changes with each step, so the range still shows —
+   it just shows over a couple of seconds instead of all at once. */
+.step{display:inline-flex;align-items:center;gap:calc(2 * var(--s));
+  font-size:calc(15 * var(--s));color:var(--dim);white-space:nowrap}
+.step + .step{margin-left:calc(14 * var(--s))}
+.step b{font-weight:400;color:var(--ink);min-width:calc(58 * var(--s));
+  text-align:center}
+.stepBtn{font-family:var(--font);font-size:calc(19 * var(--s));line-height:1;
+  color:var(--dim);background:none;border:0;cursor:pointer;
+  padding:calc(2 * var(--s)) calc(5 * var(--s));border-radius:999px;
+  transition:color .15s ease,background .15s ease}
+.stepBtn:hover{color:var(--ink);background:var(--tint)}
+.stepBtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+/* ── THE SHUFFLE GETS ITS OWN LINE ──
+   Sitting on the end of the stepper row it read as abandoned: same line, no
+   relationship to either name, no obvious job. Xero, Zillow and Workable all
+   solve this the same way — the alternative action goes on its own line
+   directly beneath the primary controls, centred and quieter.
+
+   Its own line, then, but still a link rather than a button. Making it
+   full-size would put the heaviest weight on the page's least important
+   control, which is the mistake the swatches made in a different form.
+   Icon AND word together: the glyph alone was a guess, the pair is not. */
+.tryBar{flex-direction:column}
+.tryRowTop{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}
+.surprise{display:inline-flex;align-items:center;gap:calc(5 * var(--s));
+  margin-top:calc(7 * var(--s));padding:calc(3 * var(--s)) calc(9 * var(--s));
+  font-family:var(--font);font-size:calc(13 * var(--s));
+  color:var(--dim);background:none;border:0;border-radius:999px;cursor:pointer;
+  transition:color .15s ease,background .15s ease}
+.surprise svg{width:calc(15 * var(--s));height:calc(15 * var(--s))}
+.surprise:hover{color:var(--ink);background:var(--tint)}
+.surprise:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tryHint{margin:calc(7 * var(--s)) 0 0;font-size:calc(14 * var(--s));
+  color:var(--dim);letter-spacing:.04em}
+.tryBar{max-width:min(94vw,calc(var(--pw) * 1.9))}
+.tryBtn{font-family:var(--font);font-size:calc(13 * var(--s));
+  padding:calc(4 * var(--s)) calc(10 * var(--s));border-radius:999px;
+  border:2px solid var(--edge);background:var(--tint);
+  color:var(--ink);cursor:pointer;line-height:1.15}
+.tryBtn:hover{border-color:var(--edgeOn)}
+.tryBtn[aria-pressed=true]{background:var(--ink);color:var(--onInk);
+  border-color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.dPet{display:none}}
+
 .grain{position:absolute;inset:0;pointer-events:none;opacity:.13;
   background:url(art/grain.webp) repeat;background-size:calc(64 * var(--s)) calc(64 * var(--s))}
 
@@ -135,7 +419,12 @@ a{color:inherit}
      the page is pinned to one screen, so air at the top and air around the
      drawings are drawn from one budget. This takes what is going spare on a
      large monitor and leaves a 1440x900 laptop where it was. */
-  padding:clamp(2.4rem,6.4vh,6.5rem) 1.5rem 3.6rem;display:grid;grid-template-columns:auto auto;
+  /* Top raised and bottom trimmed to even the two gaps. Measured at a 773px
+     viewport the page sat 49px from the top and left 79px under the picker
+     before the footer, so the whole block read as riding high. Moving air
+     from the bottom to the top costs nothing — the total is the same and
+     the page still fits one screen. */
+  padding:clamp(3.0rem,8.0vh,7.2rem) 1.5rem 2.6rem;display:grid;grid-template-columns:auto auto;
   /* start, not center: the wordmark and the phone begin on the same line.
      Centring gave the two columns different tops, because they are different
      heights, and the lockup floated 38px below the top of the device beside
@@ -190,7 +479,7 @@ a{color:inherit}
    the moon, which is not where it belongs. 8.5rem is where both hold — no
    scroll at any size, and the promise stays in the space above the line from
    1440x900 upwards. */
-.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 8.5rem) / 2.11));
+.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 16rem) / 2.11));
   --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
@@ -254,6 +543,7 @@ a{color:inherit}
 .brand{width:clamp(58px,6.5vw,78px);height:auto;border-radius:22.5%;
   margin:0;flex:0 0 auto;box-shadow:0 12px 26px rgba(0,0,0,.38)}
 
+.room.lightRoom h1,.room.lightRoom .lede{text-shadow:none}
 h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
 /* ── A SHADOW UNDER THE WORDS ──
@@ -346,7 +636,7 @@ h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
 .signup .cta input[type=email]::placeholder{color:rgba(11,8,18,.52)}
 .signup .cta input[type=email]:focus{border-color:var(--onMoon);
   background:rgba(255,252,247,.8)}
-.signup .cta button{background:var(--onMoon);color:var(--ink)}
+.signup .cta button{background:var(--onMoon);color:#FFF4E8}
 .signup .soon{color:var(--onMoon);text-shadow:none}
 /* Black, not the warm brown it used to be.
    #6B2D12 measured 2.33:1 against the darkest part of the floor — by a

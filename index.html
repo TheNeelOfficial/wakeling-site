@@ -7,7 +7,7 @@
 <title>Wakeling — the alarm that goes quiet when you get up</title>
 <meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It goes quiet while you are moving, so the fastest way to stop it is to get up. A chalk-drawn pet wakes with you. The alarm is free forever.">
 <link rel="icon" href="icon.webp?v=e1ed1905"><link rel="apple-touch-icon" href="notification-icon.png?v=7ca90ccc">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Slackey&display=swap" rel="stylesheet">
 <style>
 :root{
   /* Straight from the app's dawn room. */
@@ -17,6 +17,8 @@
      footer and a mismatched tint above the space. */
   --space:#0D1325; --floor:#827F86;
   --ink:#FFF4E8; --muted:rgba(255,244,232,.88); --dim:rgba(255,244,232,.62);
+  --onInk:#241B20; --edge:rgba(255,244,232,.28); --edgeOn:rgba(255,244,232,.55);
+  --tint:rgba(255,244,232,.07);
   --paper:#FBF6EF; --dark:#241B20; --rule:#EADFD4;
   --font:'Gaegu',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
@@ -95,28 +97,310 @@ a{color:inherit}
    This cannot disturb the horizon: --horizon is set in PIXELS from the room's
    top, measured off the video, so growing the room DOWNWARD does not move it.
    The extra height is floor, which is exactly what belongs below the floor. */
-.room{position:relative;min-height:100svh;min-height:100lvh;overflow:hidden;
+.room{color:var(--ink);position:relative;min-height:100svh;min-height:100lvh;overflow:hidden;
   background:var(--floor);
   --s:calc(100svh / 640);--horizon:60.9%;--roomW:305px;
-  --skirtH:calc(var(--roomW) * 45 / 1125)}
+  --skirtH:calc(var(--roomW) * var(--skirtPt,15) / 430)}
 /* Each half carries its own colour UNDER its texture, so a failed image
    degrades to the right half of the room instead of to whatever the room's
    single base happens to be. Written in the shorthand deliberately: the
    background shorthand resets background-color, so declaring the image alone
    would quietly throw the colour away. */
-.wall{position:absolute;left:0;right:0;top:0;height:var(--horizon);
-  background:var(--space) url(art/moon-wall.webp) repeat;
-  background-size:calc(var(--roomW) * 600 / 1125) auto}
+/* ── THE ROOM IS A VARIABLE NOW ──
+   Each layer takes its art and tile width from a custom property so the room
+   switcher can repaint the page and the phone's screen from one place. The moon
+   values remain the declared fallbacks, so the page is correct before any script
+   runs and correct with no script at all. */
+/* ── THE PAGE'S GROUND STARTS WHERE THE PHONE'S GROUND STARTS ──
+   --horizon is the wall/floor line, but inside the phone that line is not where
+   the ground becomes visible: the scenery band sits across it, so the grass, the
+   sand, the pavement all begin BELOW it — 46.7% of the band's height below,
+   since the band straddles the line with 53.3% of itself above.
+
+   The page has no band, so matching --horizon put its grass level with the
+   phone's waterline instead of with the phone's grass. Dropping the page's
+   ground by the same amount lines up what you actually see: sky against sky,
+   ground against ground, with the scenery sitting on the join inside the phone
+   where it belongs. */
+.room{--groundDrop:calc(var(--roomW) * var(--skirtPt,15) / 430 * 0.467)}
+.wall{position:absolute;left:0;right:0;top:0;
+  height:calc(var(--horizon) + var(--groundDrop));
+  background:var(--space) var(--wallImg,url(art/moon-wall.webp)) repeat;
+  /* In POINTS, the same as the phone: --roomW is the phone's rendered
+     width and the phone is 430pt across, so one point is roomW/430.
+     Sizing the height with auto instead let the art's own aspect decide,
+     and the page's planks came out about a seventh taller than the same
+     planks inside the phone. */
+  background-size:calc(var(--roomW) * var(--tileWpt,200) / 430)
+                  calc(var(--roomW) * var(--tileHpt,300) / 430)}
 /* The rocky band straddles the horizon rather than sitting under it. Its own
    art turns from space to moon 53.3% of the way down (row 24 of 45, measured),
    so lifting it by that much puts ITS grey exactly on the horizon — which is
    the line the video's grey has to meet. */
-.skirt{position:absolute;left:0;right:0;height:var(--skirtH);
-  top:calc(var(--horizon) - (var(--skirtH) * 0.533));
-  background:url(art/moon-skirting.webp) repeat-x;background-size:var(--roomW) 100%}
-.floor{position:absolute;left:0;right:0;top:var(--horizon);bottom:0;
-  background:var(--floor) url(art/moon-floor.webp) repeat;
-  background-size:var(--roomW) auto}
+/* ── THE BAND BELONGS TO THE PHONE ──
+   The skirting is a scene element, not a texture: the park's hedge, Down
+   Under's harbour skyline, Venice's rooftops. Drawn on the page as well it
+   appears twice, and the two can never quite agree — the page's copy is scaled
+   to the room while the phone's is scaled to the screen, so the hedge lands at
+   one height outside the phone and a slightly different one inside it, which
+   reads as a misalignment rather than as scenery.
+
+   So the page keeps only the two flat halves, wall and floor, meeting on the
+   horizon, and every piece of scenery lives inside the phone where it belongs.
+   The line then cannot disagree with itself, because there is only one of it. */
+.skirt{display:none}
+.floor{position:absolute;left:0;right:0;
+  top:calc(var(--horizon) + var(--groundDrop));bottom:0;
+  /* ── ONE COPY ACROSS, NOT A TILE ──
+     Repeating this sideways always left a faint line at the join, and
+     mirroring it, trimming the duplicated edge columns and rounding the tile
+     to whole pixels each failed to hide it. So the repeat is removed rather
+     than disguised: one copy stretched the full width, and there is no join
+     left to see.
+
+     Only safe because of WHAT this art is. A floor here is horizontal bands —
+     planks, regolith, sand — so stretching it sideways moves nothing the eye
+     tracks. The plank HEIGHT is what has to agree with the phone, and that is
+     still set in the app's own points, so the two floors still meet along the
+     horizon.
+
+     repeat-y, because the room grows downward past the viewport on short
+     windows and the floor has to keep going. */
+  background:var(--floor) var(--floorImg,url(art/moon-floor.webp)) repeat-y;
+  background-size:100% calc(var(--roomW) * var(--plankPt,200) / 430)}
+/* ── THE INTERACTIVE DEMO ───────────────────────────────────────────────
+   The phone used to hold a screen recording: one room, one pet, no way to
+   see the other eight rooms or three pets. Those are most of what is being
+   sold, and they were invisible.
+
+   So the screen is composed here from the app's OWN art, layered in the
+   app's own order — wall, window, floor, skirting, mat, pet — and the
+   switcher below repaints it. Because the page's room reads the same custom
+   properties, changing the room changes the whole page with it.
+
+   The pet is alpha video so it sits on whatever room is behind it. Two
+   encodes, because no single codec covers every browser: VP9-in-WebM for
+   Chrome and Firefox, HEVC-in-MP4 for Safari, both listed as <source>. */
+/* The screen used to be a <video>, whose width/height attributes gave the phone
+   its shape. A div has no intrinsic size, so the ratio has to be stated or the
+   whole phone collapses to nothing. 540x1174 is the recording's own frame. */
+.screen{position:relative;overflow:hidden;width:100%;aspect-ratio:540/1174;
+  border-radius:calc(var(--pw) * .125);
+  background:var(--dScreenWall,#0D1325);
+  --dHorizon:60.9%;
+  --dS:calc(var(--pw) / 15)}
+/* 60.9% is VIDEO_HORIZON, the line the page's own room is aligned to. The two
+   MUST read the same number or the phone looks pasted onto the page: the app's
+   FLOOR_TOP is 0.6, but the recording this page was built around put the line at
+   715/1174 once the status bar is counted, and the page has been aligned to that
+   ever since. */
+.dWall{position:absolute;left:0;right:0;top:0;height:var(--dHorizon);
+  background:var(--dScreenWall) var(--dWallImg) repeat;
+  background-size:var(--dTileW) var(--dTileH)}
+.dWin{position:absolute;left:10.9%;top:17.1%;width:23.8%;
+  aspect-ratio:100/133;background:var(--dWinImg) center/100% 100% no-repeat}
+.dFloor{position:absolute;left:0;right:0;top:var(--dHorizon);bottom:0;
+  background:var(--dScreenFloor) var(--dFloorImg) repeat-y;
+  background-size:100% var(--dPlankH)}
+.dSkirt{position:absolute;left:0;right:0;
+  top:calc(var(--dHorizon) - var(--dSkirtH) * 0.533);height:var(--dSkirtH);
+  background:var(--dSkirtImg) repeat-x;background-size:100% 100%}
+/* Furniture straddles the horizon: its lid is above the line and its base
+   below, which is what plants it on the floor rather than standing it on the
+   line. Measured off the recording. */
+.dTable{position:absolute;right:var(--dTableRight);top:var(--dTableTop);
+  width:24.8%;height:12.25%;
+  background:var(--dTableImg) center/100% 100% no-repeat}
+/* The clock stands ON the lid: CLOCK_ON_TABLE across it, and its FEET on the
+   surface, which sit CLOCK_FOOT of the way down its own artwork. */
+/* ── THE CLOCK STANDS UP WHEN THE ALARM IS SET ──
+   Not a ring, a TOPPLE. In the app, standing the clock up is how you arm the
+   alarm and knocking it over is how you cancel it — the gesture is the setting,
+   which is why the room needs no switch. So the clock is upright exactly while
+   an alarm is armed and lies on its face the rest of the time.
+
+   ONE piece of artwork, rotated, never two stills: a swap between drawings pops,
+   a rotation falls. A full quarter turn, because that is where the round body
+   actually meets the table when it pivots on its foot — stopping short leaves it
+   hovering. And it pivots on its LEFT FOOT, not its centre or a corner, since
+   the ink stops well inside the box and rotating about the corner swings it
+   through the tabletop on the way down.
+
+   All four numbers are the app's own: TIPPED_ANGLE, CLOCK_PIVOT_X, CLOCK_FOOT
+   and the 7 degrees it rocks back on impact. */
+.dClockObj{transform-origin:19.17% 95.08%;transform:rotate(-90deg);
+  transition:transform .30s cubic-bezier(.33,1.5,.6,1)}
+.armed .dClockObj{transform:rotate(0deg);
+  transition:transform .21s cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion:reduce){.dClockObj{transition:none}}
+.dClockObj{position:absolute;left:var(--dClockLeft);top:var(--dClockTop);
+  width:8%;height:4.65%;
+  background:var(--dClockImg) bottom/100% 100% no-repeat}
+/* Centred, and IN FRONT of the pet — the app puts it at the paw line where he
+   can reach it, not behind him. */
+.dBowl{position:absolute;left:50%;transform:translateX(-50%);
+  top:var(--dBowlTop,82.3%);width:9.9%;height:2.6%;
+  background:var(--dBowlImg) center/100% 100% no-repeat}
+.dMat{position:absolute;left:50%;transform:translateX(-50%);
+  width:67.5%;aspect-ratio:265/115;bottom:var(--dMatBottom,12.9%);
+  background:var(--dMatImg,url(demo/mat.webp)) center/100% 100% no-repeat}
+/* ── EVERY PET IS SIZED FROM ITS OWN FIT ──
+   The clips are not one shape. Carrot's canvas is 792x688 at scale 1.0; the
+   other three are 16:9 at scale 1.34 to 1.53, because their art sits in more
+   transparent margin. Drawing them all at one width makes three of them the
+   wrong size, which is what a single 42% did.
+
+   placeCarrot's numbers, then: width is CARROT_WIDTH * scale against a 390pt
+   screen, and every pet's canvas BOTTOM lands on canvasBottom — floorTop +
+   floorHeight * (1 - CARROT_UP_THE_FLOOR). Their paw lines then agree to within
+   a fifth of a percent, which is why one mat position suits all four. */
+.dPet{position:absolute;bottom:var(--dPetBottom,18%);
+  left:calc(50% + var(--dPetNudge,0%));transform:translateX(-50%);
+  width:var(--dPetW,42%);display:block}
+/* The app's chrome, rebuilt rather than baked into an image so it stays crisp
+   at any size and can be corrected without a re-record. */
+/* The screen's own chrome takes the same luminance decision as the page:
+   cream on a night room, the app's dark ink on a daylit one. */
+.dUi{position:absolute;inset:0;pointer-events:none;
+  font-family:var(--font);color:var(--dInk,#FFF4E8)}
+/* ── EVERY POSITION MEASURED OFF THE RECORDING ──
+   The clock, its sub-line and the mission chip are NOT centred on the screen.
+   They sit in a column to the right of the window, because the window is on the
+   left and the app lays the two out side by side. Centring them was the single
+   biggest reason this screen did not read as the app: the clock sat over the
+   Earth instead of beside it.
+
+   Read off a gridded frame rather than judged by eye. Column centre 65%, and
+   the whole group about five percent lower than I first had it.
+
+   ── THE TOP BAR, COPIED NOT INVENTED ──
+   A SOLID heart, not an outline: the app draws it filled, and in the same rose
+   as the clock, so love reads as one idea wherever it appears. The count starts
+   at zero because a landing page showing 860 is showing somebody else's
+   progress — an empty count is what a new user actually sees, and the pet is
+   what fills it.
+
+   The three dots on the right are the app's own control. Leaving them out made
+   the screen look like a mockup of the app rather than the app. */
+.dLove{position:absolute;left:7.3%;top:3.6%;display:flex;align-items:center;
+  gap:calc(var(--dS) * .34);color:var(--love);font-size:calc(var(--dS) * .78)}
+.dLove svg{width:calc(var(--dS) * .86);height:calc(var(--dS) * .86)}
+.dMenu{position:absolute;right:11%;top:4.2%;color:var(--love);opacity:.9}
+.dMenu svg{width:calc(var(--dS) * .74);height:calc(var(--dS) * .74)}
+.dClock{position:absolute;left:40%;right:7%;top:13.6%;
+  display:flex;align-items:center;justify-content:center;gap:.16em;
+  font-family:'Slackey',var(--font);font-size:calc(var(--dS) * 1.62);
+  /* Never wraps. Sized so the whole string spans the same 46% of the screen
+     it does in the app; at the old size it overflowed its column and the
+     minutes dropped onto a second line. */
+  white-space:nowrap;
+  /* HOLLOW, which is the app's own word for it: theme.ts calls the alarm time
+     hollow so it belongs to the wall rather than to the UI. Filling it in made
+     the clock the loudest thing on the screen, which is the opposite of what
+     that decision is for. Transparent centre, stroked edge. */
+  color:transparent;-webkit-text-stroke:calc(var(--dS) * .05) var(--love);
+  letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.dSub{position:absolute;left:40%;right:7%;top:22.0%;text-align:center;
+  font-size:calc(var(--dS) * .72);opacity:.86}
+/* The mission chip. The recording had it and it is not decoration: it is the
+   line that says the alarm has a task attached, which is the product. */
+.dChip{position:absolute;left:40%;right:7%;top:25.4%;text-align:center;opacity:1;
+  color:var(--love)}
+/* An ELLIPSE, not a pill: the app draws an oval around the word, which is why a
+   999px radius looked wrong however the padding was tuned. And a paw before it,
+   which was missing entirely. */
+.dChip span{display:inline-flex;align-items:center;gap:.34em;
+  border:1px solid currentColor;border-radius:50%/50%;
+  padding:.30em 1.05em .34em;font-size:calc(var(--dS) * .62);opacity:.95}
+.dChip svg{width:.92em;height:.92em;margin-top:-.06em}
+/* ── THE CLOCK MOVES ──
+   The recording's whole point was that you watch an alarm being set. A still
+   clock makes the phone look like a screenshot, so the minutes roll and the
+   line under them follows, on the same loop the recording had. */
+/* ── HOURS AND MINUTES ON ONE LINE ──
+   The minutes live in an overflow:hidden inline-block so they can roll, and such
+   a box takes its BASELINE from its bottom edge rather than from the text
+   inside. Sat next to plain text it therefore rode high, and the minutes sat
+   above the hours.
+
+   So the clock is a flex row and every part is one em tall: they align by their
+   boxes, and where the baseline falls stops mattering. */
+.dRoll{display:block;overflow:hidden;height:1em}
+.dNum,.dSep{display:block;height:1em;line-height:1em}
+.dSep{margin-top:-.06em}
+.dRoll b{display:block;font-weight:inherit;line-height:1em;
+  transition:transform .5s cubic-bezier(.22,1,.36,1)}
+.dRoll b i{display:block;font-style:normal;height:1em;line-height:1em}
+.dSub,.dChip{transition:opacity .32s ease}
+.dTabs{position:absolute;left:0;right:0;bottom:3.4%;display:flex;
+  color:var(--dInkFloor,#FFF4E8);
+  justify-content:center;gap:calc(var(--dS) * 2.4);font-size:calc(var(--dS) * .72);
+  opacity:.9}
+
+/* ── THE SWITCHER ── */
+/* Under the phone, in the phone's own column, so it reads as controls FOR the
+   phone rather than as a third thing in the hero. */
+.phoneCol{display:flex;flex-direction:column;align-items:center}
+.tryBar{margin-top:calc(10 * var(--s));display:flex;
+  gap:0;align-items:center;justify-content:center;flex-wrap:wrap}
+/* ── TWO STEPPERS, AND NOTHING ELSE ──
+   This control has been a shuffle, then thirteen pills, then thirteen swatches.
+   The swatches showed the whole range, which was the right instinct and the
+   wrong weight: thirteen circles under the phone is more furniture than a
+   landing page can carry, and it competed with the thing it was meant to be
+   showing off.
+
+   So it is down to the smallest thing that still does the job. A name says
+   WHICH room you are looking at, which the shuffle never did. Two chevrons let
+   you go forward and back, so nothing is unreachable and you can return to one
+   you liked. And it reads as one quiet line of type rather than as a widget.
+
+   What is lost is seeing all nine at once. The wheel already walks them, and
+   the room behind the phone changes with each step, so the range still shows —
+   it just shows over a couple of seconds instead of all at once. */
+.step{display:inline-flex;align-items:center;gap:calc(2 * var(--s));
+  font-size:calc(15 * var(--s));color:var(--dim);white-space:nowrap}
+.step + .step{margin-left:calc(14 * var(--s))}
+.step b{font-weight:400;color:var(--ink);min-width:calc(58 * var(--s));
+  text-align:center}
+.stepBtn{font-family:var(--font);font-size:calc(19 * var(--s));line-height:1;
+  color:var(--dim);background:none;border:0;cursor:pointer;
+  padding:calc(2 * var(--s)) calc(5 * var(--s));border-radius:999px;
+  transition:color .15s ease,background .15s ease}
+.stepBtn:hover{color:var(--ink);background:var(--tint)}
+.stepBtn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+/* ── THE SHUFFLE GETS ITS OWN LINE ──
+   Sitting on the end of the stepper row it read as abandoned: same line, no
+   relationship to either name, no obvious job. Xero, Zillow and Workable all
+   solve this the same way — the alternative action goes on its own line
+   directly beneath the primary controls, centred and quieter.
+
+   Its own line, then, but still a link rather than a button. Making it
+   full-size would put the heaviest weight on the page's least important
+   control, which is the mistake the swatches made in a different form.
+   Icon AND word together: the glyph alone was a guess, the pair is not. */
+.tryBar{flex-direction:column}
+.tryRowTop{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}
+.surprise{display:inline-flex;align-items:center;gap:calc(5 * var(--s));
+  margin-top:calc(7 * var(--s));padding:calc(3 * var(--s)) calc(9 * var(--s));
+  font-family:var(--font);font-size:calc(13 * var(--s));
+  color:var(--dim);background:none;border:0;border-radius:999px;cursor:pointer;
+  transition:color .15s ease,background .15s ease}
+.surprise svg{width:calc(15 * var(--s));height:calc(15 * var(--s))}
+.surprise:hover{color:var(--ink);background:var(--tint)}
+.surprise:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tryHint{margin:calc(7 * var(--s)) 0 0;font-size:calc(14 * var(--s));
+  color:var(--dim);letter-spacing:.04em}
+.tryBar{max-width:min(94vw,calc(var(--pw) * 1.9))}
+.tryBtn{font-family:var(--font);font-size:calc(13 * var(--s));
+  padding:calc(4 * var(--s)) calc(10 * var(--s));border-radius:999px;
+  border:2px solid var(--edge);background:var(--tint);
+  color:var(--ink);cursor:pointer;line-height:1.15}
+.tryBtn:hover{border-color:var(--edgeOn)}
+.tryBtn[aria-pressed=true]{background:var(--ink);color:var(--onInk);
+  border-color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.dPet{display:none}}
+
 .grain{position:absolute;inset:0;pointer-events:none;opacity:.13;
   background:url(art/grain.webp) repeat;background-size:calc(64 * var(--s)) calc(64 * var(--s))}
 
@@ -135,7 +419,12 @@ a{color:inherit}
      the page is pinned to one screen, so air at the top and air around the
      drawings are drawn from one budget. This takes what is going spare on a
      large monitor and leaves a 1440x900 laptop where it was. */
-  padding:clamp(2.4rem,6.4vh,6.5rem) 1.5rem 3.6rem;display:grid;grid-template-columns:auto auto;
+  /* Top raised and bottom trimmed to even the two gaps. Measured at a 773px
+     viewport the page sat 49px from the top and left 79px under the picker
+     before the footer, so the whole block read as riding high. Moving air
+     from the bottom to the top costs nothing — the total is the same and
+     the page still fits one screen. */
+  padding:clamp(3.0rem,8.0vh,7.2rem) 1.5rem 2.6rem;display:grid;grid-template-columns:auto auto;
   /* start, not center: the wordmark and the phone begin on the same line.
      Centring gave the two columns different tops, because they are different
      heights, and the lockup floated 38px below the top of the device beside
@@ -190,7 +479,7 @@ a{color:inherit}
    the moon, which is not where it belongs. 8.5rem is where both hold — no
    scroll at any size, and the promise stays in the space above the line from
    1440x900 upwards. */
-.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 8.5rem) / 2.11));
+.phone{--pw:min(clamp(215px,26vw,400px),calc((100svh - 16rem) / 2.11));
   --bez:calc(var(--pw) * .028);
   position:relative;width:var(--pw);padding:var(--bez);
   border-radius:calc(var(--pw) * .154);
@@ -254,6 +543,7 @@ a{color:inherit}
 .brand{width:clamp(58px,6.5vw,78px);height:auto;border-radius:22.5%;
   margin:0;flex:0 0 auto;box-shadow:0 12px 26px rgba(0,0,0,.38)}
 
+.room.lightRoom h1,.room.lightRoom .lede{text-shadow:none}
 h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
   letter-spacing:.01em;text-shadow:0 3px 18px rgba(0,0,0,.35)}
 /* ── A SHADOW UNDER THE WORDS ──
@@ -346,7 +636,7 @@ h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
 .signup .cta input[type=email]::placeholder{color:rgba(11,8,18,.52)}
 .signup .cta input[type=email]:focus{border-color:var(--onMoon);
   background:rgba(255,252,247,.8)}
-.signup .cta button{background:var(--onMoon);color:var(--ink)}
+.signup .cta button{background:var(--onMoon);color:#FFF4E8}
 .signup .soon{color:var(--onMoon);text-shadow:none}
 /* Black, not the warm brown it used to be.
    #6B2D12 measured 2.33:1 against the darkest part of the floor — by a
@@ -674,8 +964,43 @@ body.docpage{background:var(--paper);color:var(--dark)}
   <div class="grain"></div>
 
   <div class="hero" id="hero">
+    <div class="phoneCol">
     <div class="phone">
-      <video src="phone.mp4?v=e791102a" poster="phone.webp?v=d03896c4" width="540" height="1174" class="screen" autoplay loop muted playsinline preload="metadata" aria-label="Wakeling in use: the alarm is set and Carrot the corgi curls up to sleep, then the alarm is switched off and he wakes up again"></video>
+      <div class="screen" id="demo" role="img"
+           aria-label="Wakeling running: a pet in a room behind a large alarm clock. The buttons below change the room and the pet.">
+        <div class="dWall"></div><div class="dWin"></div>
+        <div class="dFloor"></div><div class="dSkirt"></div>
+        <div class="dMat"></div><div class="dTable"></div>
+          <div class="dClockObj"></div>
+        <video class="dPet" id="demoPet" autoplay loop muted playsinline preload="auto" aria-hidden="true">
+          <source id="demoPetHevc" src="demo/pet/carrot.mp4" type="video/mp4; codecs=hvc1">
+          <source id="demoPetWebm" src="demo/pet/carrot.webm" type="video/webm">
+        </video>
+          <div class="dBowl"></div>
+        <div class="dUi">
+          <div class="dLove"><svg viewBox="0 0 48 48" aria-hidden="true" fill="currentColor"><path d="M24 42.5C9.5 32.2 3.5 24.4 3.5 16.8 3.5 10.2 8.6 5.5 14.6 5.5c3.9 0 7.4 2.3 9.4 5.9 2-3.6 5.5-5.9 9.4-5.9 6 0 11.1 4.7 11.1 11.3 0 7.6-6 15.4-20.5 25.7z"/></svg><span>0</span></div><div class="dMenu" aria-hidden="true"><svg viewBox="0 0 48 48" fill="currentColor"><circle cx="10" cy="24" r="4"/><circle cx="24" cy="24" r="4"/><circle cx="38" cy="24" r="4"/></svg></div>
+          <div class="dClock"><span class="dNum">07</span><span class="dSep">:</span><span class="dRoll"><b id="dRollInner"><i>55</i><i>00</i></b></span></div>
+          <div class="dSub" id="dSub">Rings in 7h 4m</div>
+            <div class="dChip" id="dChip"><span><svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><ellipse cx="24" cy="33" rx="10.5" ry="8.2"/><ellipse cx="11.5" cy="20" rx="4.6" ry="6"/><ellipse cx="19.8" cy="14.2" rx="4.7" ry="6.6"/><ellipse cx="28.2" cy="14.2" rx="4.7" ry="6.6"/><ellipse cx="36.5" cy="20" rx="4.6" ry="6"/></svg>mission</span></div>
+          <div class="dTabs"><span>achievements</span><span>customise</span></div>
+        </div>
+      </div>
+    </div>
+      <div class="tryBar">
+        <div class="tryRowTop">
+          <span class="step">
+            <button class="stepBtn" type="button" data-step="room" data-dir="-1" aria-label="Previous room">&#8249;</button>
+            <b id="roomName">Moon</b>
+            <button class="stepBtn" type="button" data-step="room" data-dir="1" aria-label="Next room">&#8250;</button>
+          </span>
+          <span class="step">
+            <button class="stepBtn" type="button" data-step="pet" data-dir="-1" aria-label="Previous pet">&#8249;</button>
+            <b id="petName">Carrot</b>
+            <button class="stepBtn" type="button" data-step="pet" data-dir="1" aria-label="Next pet">&#8250;</button>
+          </span>
+        </div>
+        <button class="surprise" type="button" id="tryAgain" aria-label="Shuffle the room and pet"><svg viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 L17.5 17 L30.5 31 L40 31"/><path d="M7 31 L17.5 31 L30.5 17 L40 17"/><path d="M34.6 25.6 L40.4 31 L34.6 36.4"/><path d="M34.6 11.6 L40.4 17 L34.6 22.4"/></svg><span>Shuffle</span></button>
+      </div>
     </div>
     <div class="pitch">
       <div class="lockup">
@@ -834,6 +1159,336 @@ body.docpage{background:var(--paper);color:var(--dark)}
 </div>
 
 <script>
+/* ── THE ROOM AND PET SWITCHER ──
+   One entry per room, lifted out of catalog.ts at build time, so the site cannot
+   drift from the app about what a room is.
+
+   Switching sets custom properties on the ROOM element, and both the page's own
+   wall/floor/skirting AND the phone's screen read those same properties. That is
+   why one click repaints everything: they were always the same room, the values
+   were simply hard-coded before.
+
+   HEVC is listed before WebM in the markup on purpose. Safari alone can read the
+   alpha in the HEVC file, and offered a WebM first it takes it and then draws
+   the pet as an opaque block. */
+(function(){
+  var ROOMS = {"bedroom":{"n":"Bedroom","d":{"wall":"demo/room/bedroom-day-wall.webp","floor":"demo/room/bedroom-day-floor.webp","skirting":"demo/room/bedroom-day-skirting.webp","window":"demo/room/bedroom-day-window.webp","floorColor":"#6F4739","wallColor":"#744F51","wallTile":[120,180],"plankHeight":20,"skirtingHeight":15,"inkWall":"#c0d6b3","inkFloor":"#FFFFFF","love":"#f1c5dd","wallX2":"demo/room/bedroom-day-wall-x2.webp","wallX2Ratio":1.9944444444444445,"floorX2":"demo/room/bedroom-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/bedroom-night-wall.webp","floor":"demo/room/bedroom-night-floor.webp","skirting":"demo/room/bedroom-night-skirting.webp","window":"demo/room/bedroom-night-window.webp","floorColor":"#493432","wallColor":"#453741","wallTile":[120,180],"plankHeight":20,"skirtingHeight":15,"inkWall":"#aba863","inkFloor":"#7eb06d","love":"#E79BC4","wallX2":"demo/room/bedroom-night-wall-x2.webp","wallX2Ratio":1.9944444444444445,"floorX2":"demo/room/bedroom-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"walnut","bowl":"enamel","mat":"sheepskin","clock":"twin-bell"}},"moon":{"n":"Moon","d":{"wall":"demo/room/moon-day-wall.webp","floor":"demo/room/moon-day-floor.webp","skirting":"demo/room/moon-day-skirting.webp","window":"demo/room/moon-day-window.webp","floorColor":"#827F86","wallColor":"#0D1225","wallTile":[200,300],"plankHeight":200,"skirtingHeight":15,"inkWall":"#af6a8f","inkFloor":"#211312","love":"#E79BC4","wallX2":"demo/room/moon-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/moon-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/moon-night-wall.webp","floor":"demo/room/moon-night-floor.webp","skirting":"demo/room/moon-night-skirting.webp","window":"demo/room/moon-night-window.webp","floorColor":"#827F86","wallColor":"#0D1225","wallTile":[200,300],"plankHeight":200,"skirtingHeight":15,"inkWall":"#af6a8f","inkFloor":"#211312","love":"#E79BC4","wallX2":"demo/room/moon-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/moon-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"crate","bowl":"canteen","mat":"landing-pad","clock":"mission"}},"mars":{"n":"Mars","d":{"wall":"demo/room/mars-day-wall.webp","floor":"demo/room/mars-day-floor.webp","skirting":"demo/room/mars-day-skirting.webp","window":"demo/room/mars-day-window.webp","floorColor":"#B77150","wallColor":"#D3A381","wallTile":[200,300],"plankHeight":200,"skirtingHeight":15,"inkWall":"#000000","inkFloor":"#101e10","love":"#771d4e","wallX2":"demo/room/mars-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/mars-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/mars-night-wall.webp","floor":"demo/room/mars-night-floor.webp","skirting":"demo/room/mars-night-skirting.webp","window":"demo/room/mars-night-window.webp","floorColor":"#6F4839","wallColor":"#231C2B","wallTile":[200,300],"plankHeight":200,"skirtingHeight":15,"inkWall":"#b27970","inkFloor":"#a8cfa5","love":"#E79BC4","wallX2":"demo/room/mars-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/mars-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"crate","bowl":"canteen","mat":"rag","clock":"mission"}},"park":{"n":"Park","d":{"wall":"demo/room/park-day-wall.webp","floor":"demo/room/park-day-floor.webp","skirting":"demo/room/park-day-skirting.webp","window":"demo/room/park-day-window.webp","floorColor":"#7EA55B","wallColor":"#A7D0E8","wallTile":[200,300],"plankHeight":200,"skirtingHeight":34,"inkWall":"#774075","inkFloor":"#1e3338","love":"#982563","wallX2":"demo/room/park-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/park-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/park-night-wall.webp","floor":"demo/room/park-night-floor.webp","skirting":"demo/room/park-night-skirting.webp","window":"demo/room/park-night-window.webp","floorColor":"#38523E","wallColor":"#1D2C4D","wallTile":[200,300],"plankHeight":200,"skirtingHeight":34,"inkWall":"#bd84a9","inkFloor":"#b9bdda","love":"#E79BC4","wallX2":"demo/room/park-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/park-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"bench","bowl":"tin","mat":"picnic","clock":"station"}},"downunder":{"n":"Down Under","d":{"wall":"demo/room/downunder-day-wall.webp","floor":"demo/room/downunder-day-floor.webp","skirting":"demo/room/downunder-day-skirting.webp","window":"demo/room/downunder-day-window.webp","floorColor":"#93AA60","wallColor":"#A6D1E9","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#774076","inkFloor":"#203c3b","love":"#982563","wallX2":"demo/room/downunder-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/downunder-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/downunder-night-wall.webp","floor":"demo/room/downunder-night-floor.webp","skirting":"demo/room/downunder-night-skirting.webp","window":"demo/room/downunder-night-window.webp","floorColor":"#3C4E3A","wallColor":"#19294A","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#b97ea5","inkFloor":"#a9bad1","love":"#E79BC4","wallX2":"demo/room/downunder-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/downunder-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"bench","bowl":"coconut","mat":"towel","clock":"station"}},"venice":{"n":"Venice","d":{"wall":"demo/room/venice-day-wall.webp","floor":"demo/room/venice-day-floor.webp","skirting":"demo/room/venice-day-skirting.webp","window":"demo/room/venice-day-window.webp","floorColor":"#D9D1C6","wallColor":"#BED7E5","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#000000","inkFloor":"#366341","love":"#a5276b","wallX2":"demo/room/venice-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/venice-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/venice-night-wall.webp","floor":"demo/room/venice-night-floor.webp","skirting":"demo/room/venice-night-skirting.webp","window":"demo/room/venice-night-window.webp","floorColor":"#A9A5B0","wallColor":"#222F4F","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#bf88aa","inkFloor":"#5a3130","love":"#E79BC4","wallX2":"demo/room/venice-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/venice-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"wicker","bowl":"terracotta","mat":"persian","clock":"station"}},"paris":{"n":"Paris","d":{"wall":"demo/room/paris-day-wall.webp","floor":"demo/room/paris-day-floor.webp","skirting":"demo/room/paris-day-skirting.webp","window":"demo/room/paris-day-window.webp","floorColor":"#D3BFA6","wallColor":"#C7D5DE","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#81467e","inkFloor":"#2e5637","love":"#a5276b","wallX2":"demo/room/paris-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/paris-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/paris-night-wall.webp","floor":"demo/room/paris-night-floor.webp","skirting":"demo/room/paris-night-skirting.webp","window":"demo/room/paris-night-window.webp","floorColor":"#C2B6A8","wallColor":"#29324E","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#c18baa","inkFloor":"#2b5032","love":"#E79BC4","wallX2":"demo/room/paris-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/paris-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"bistro","bowl":"terracotta","mat":"persian","clock":"cuckoo"}},"seaside":{"n":"Seaside","d":{"wall":"demo/room/seaside-day-wall.webp","floor":"demo/room/seaside-day-floor.webp","skirting":"demo/room/seaside-day-skirting.webp","window":"demo/room/seaside-day-window.webp","floorColor":"#E0C9A5","wallColor":"#9CC8E0","wallTile":[200,300],"plankHeight":200,"skirtingHeight":34,"inkWall":"#713d70","inkFloor":"#346040","love":"#90235e","wallX2":"demo/room/seaside-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/seaside-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/seaside-night-wall.webp","floor":"demo/room/seaside-night-floor.webp","skirting":"demo/room/seaside-night-skirting.webp","window":"demo/room/seaside-night-window.webp","floorColor":"#867A73","wallColor":"#192948","wallTile":[200,300],"plankHeight":200,"skirtingHeight":34,"inkWall":"#b97ea6","inkFloor":"#000000","love":"#E79BC4","wallX2":"demo/room/seaside-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/seaside-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"boat","bowl":"shell","mat":"towel","clock":"twin-bell"}},"desert":{"n":"Desert","d":{"wall":"demo/room/desert-day-wall.webp","floor":"demo/room/desert-day-floor.webp","skirting":"demo/room/desert-day-skirting.webp","window":"demo/room/desert-day-window.webp","floorColor":"#BEA482","wallColor":"#A7C8DC","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#713d6e","inkFloor":"#24422b","love":"#90235e","wallX2":"demo/room/desert-day-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/desert-day-floor-x2.webp","floorX2Ratio":1.9982222222222221},"t":{"wall":"demo/room/desert-night-wall.webp","floor":"demo/room/desert-night-floor.webp","skirting":"demo/room/desert-night-skirting.webp","window":"demo/room/desert-night-window.webp","floorColor":"#565148","wallColor":"#253456","wallTile":[200,300],"plankHeight":200,"skirtingHeight":74,"inkWall":"#c28eb0","inkFloor":"#a5cfb2","love":"#E79BC4","wallX2":"demo/room/desert-night-wall-x2.webp","wallX2Ratio":1.9966666666666666,"floorX2":"demo/room/desert-night-floor-x2.webp","floorX2Ratio":1.9982222222222221},"it":{"table":"steamer","bowl":"canteen","mat":"rag","clock":"station"}}};
+  var room = document.querySelector('.room');
+  var pet  = document.getElementById('demoPet');
+  if (!room || !pet) return;
+  /* ── THE TILE WIDTH MUST BE A WHOLE NUMBER OF PIXELS ──
+     --roomW is rounded already, but the mirror ratio is 1.998, so multiplying
+     puts the width back on a fraction. Every repeat then lands mid-pixel, the
+     browser resamples across the join, and that soft edge is the faint line
+     that survived both the mirroring and the column trim.
+
+     Rounding the FINAL width fixes it. The cost is under a tenth of a percent
+     of scale against the phone, which is far below anything visible; the seam
+     was not. */
+  function fitFloorTile(){
+    var w = parseFloat(getComputedStyle(room).getPropertyValue('--roomW'));
+    var r = parseFloat(room.dataset.fx || '1');
+    if (w > 0) room.style.setProperty('--floorTileW', Math.round(w * r) + 'px');
+  }
+  window.addEventListener('resize', fitFloorTile);
+
+  function applyRoom(id){
+    var r = ROOMS[id]; if (!r) return;
+    var v = r.d, st = room.style;
+    st.setProperty('--wallImg',  'url(' + (v.wallX2  || v.wall)  + ')');
+    st.setProperty('--floorImg', 'url(' + (v.floorX2 || v.floor) + ')');
+    st.setProperty('--floorX', String(v.floorX2 ? v.floorX2Ratio : 1));
+    room.dataset.fx = String(v.floorX2 ? v.floorX2Ratio : 1);
+    fitFloorTile();
+    st.setProperty('--skirtImg', 'url(' + v.skirting + ')');
+    st.setProperty('--wallTileW', String(v.wallTile[0] * 3));
+    st.setProperty('--space', v.wallColor);
+    st.setProperty('--floor', v.floorColor);
+    st.setProperty('--dWallImg',  'url(' + v.wall + ')');
+    st.setProperty('--dFloorImg', 'url(' + v.floor + ')');
+    st.setProperty('--dSkirtImg', 'url(' + v.skirting + ')');
+    st.setProperty('--dWinImg',   'url(' + v.window + ')');
+    st.setProperty('--dScreenWall',  v.wallColor);
+    st.setProperty('--dScreenFloor', v.floorColor);
+    /* The items are chosen to suit the room rather than drawn at random: a
+       landing pad on a Paris balcony reads as a bug. themes.json holds the
+       pairings. */
+    st.setProperty('--dMatImg',   'url(demo/item/mat-'   + r.it.mat   + '.webp)');
+    st.setProperty('--dTableImg', 'url(demo/item/table-' + r.it.table + '.webp)');
+    st.setProperty('--dBowlImg',  'url(demo/item/bowl-'  + r.it.bowl  + '.webp)');
+    st.setProperty('--dClockImg', 'url(demo/item/clock-' + r.it.clock + '.webp)');
+
+    /* ── WHERE THE FURNITURE STANDS ──
+       furnitureBase() in the app: FURNITURE_BASE, or clear of the skirting band
+       by FURNITURE_CLEARANCE, whichever is lower down. Rooms with a tall band
+       (Down Under's skyline is 74pt against the Moon's 15) push their furniture
+       further down the floor, which is why this cannot be one fixed number. */
+    /* 430x932pt, an iPhone 15 Pro Max, which is the phone the demo recording
+       was actually made on. Measured, not assumed: the supply crate is 24.2% of
+       the frame in that recording, and TABLE_SIZE's 105pt only lands on 24.2%
+       against 430. Against 390 every item comes out about a tenth too big,
+       which is what made the Venice basket look oversized. */
+    var TW = 430, TH = 932, HORIZON = 0.609;
+    /* ── EACH PIECE'S OWN OFFSETS, STRAIGHT FROM catalog.ts ──
+       [surface, right]. Both matter and neither is shared.
+
+       surface is the height of the piece's own lid inside its artwork, so a
+       wrong one does not nudge the clock, it leaves it in mid air.
+
+       right is how far the piece stands in from the screen edge, and the boat's
+       is ZERO on purpose: it is a beached hull whose blurb says the rest is
+       down the beach, so it has to run off the frame. Every other piece stands
+       16pt clear. Assuming 16 for all of them is what kept the boat off the
+       edge. */
+    var FURN = {"walnut":[0.07,16],"bench":[0.421,16],"crate":[0.07,16],"boat":[0.269,0],"wicker":[0.243,16],"bistro":[0.1942,16],"steamer":[0.2087,16]};
+    var fu = FURN[r.it.table] || [0.07, 16];
+    var surf = fu[0], rightPt = fu[1];
+    var base = Math.max(55, v.skirtingHeight + 30);
+    var tableTop = HORIZON * TH + base - 103;
+    var tableLeft = TW - rightPt - 105;
+    st.setProperty('--dTableRight', (rightPt / TW * 100).toFixed(2) + '%');
+    st.setProperty('--dTableTop',   (tableTop / TH * 100).toFixed(2) + '%');
+    st.setProperty('--dClockLeft', ((tableLeft + 105 * 0.45) / TW * 100).toFixed(2) + '%');
+    st.setProperty('--dClockTop',  ((tableTop + 103 * surf - 44 * 0.9508) / TH * 100).toFixed(2) + '%');
+    /* ── TILE SIZES ARE IN POINTS, AGAINST THE REAL SCREEN ──
+       390x844pt, the phone the demo recording was made on. Getting this
+       reference wrong is not subtle: measured against 360x256 the floor planks
+       came out three times too tall and the skirting band with them, which is
+       what made every room read as a zoomed-in version of itself.
+
+       Width and height are both stated. A background-size of auto keeps the
+       art's own aspect, but the app tiles to an explicit width AND height, and
+       the two only agree when the art happens to match. */
+    var TW = 430, TH = 932;
+    st.setProperty('--dTileW', (v.wallTile[0] / TW * 100).toFixed(2) + '%');
+    st.setProperty('--dTileH', (v.wallTile[1] / TH * 100).toFixed(2) + '%');
+    st.setProperty('--dPlankH', (v.plankHeight / TH * 100).toFixed(2) + '%');
+    st.setProperty('--dSkirtH', (v.skirtingHeight / TH * 100).toFixed(2) + '%');
+    /* The same numbers again, unitless, for the page's own room. */
+    st.setProperty('--tileWpt', String(v.wallTile[0] * (v.wallX2 ? v.wallX2Ratio : 1)));
+    st.setProperty('--tileHpt', String(v.wallTile[1]));
+    st.setProperty('--plankPt', String(v.plankHeight));
+    st.setProperty('--skirtPt', String(v.skirtingHeight));
+    /* ── INK FOLLOWS THE ROOM ──
+       The page was built for the Moon, so every colour assumed a dark wall.
+       Down Under in daylight is a pale blue sky and the white type vanished
+       into it. Luminance of the wall decides: light rooms take the app's own
+       dark ink, and per the poster rule there is no shadow behind it — a glow
+       under dark letters on a pale sky reads as a halo. */
+    var hex = v.wallColor.replace('#','');
+    var lum = (0.2126 * parseInt(hex.slice(0,2),16) +
+               0.7152 * parseInt(hex.slice(2,4),16) +
+               0.0722 * parseInt(hex.slice(4,6),16)) / 255;
+    var light = lum > 0.52;
+    st.setProperty('--ink',    light ? '#0B0812' : '#FFF4E8');
+    st.setProperty('--muted',  light ? 'rgba(11,8,18,.86)'  : 'rgba(255,244,232,.88)');
+    st.setProperty('--dim',    light ? 'rgba(11,8,18,.62)'  : 'rgba(255,244,232,.62)');
+    st.setProperty('--onInk',  light ? '#FFF4E8' : '#241B20');
+    st.setProperty('--edge',   light ? 'rgba(11,8,18,.26)'  : 'rgba(255,244,232,.28)');
+    st.setProperty('--edgeOn', light ? 'rgba(11,8,18,.5)'   : 'rgba(255,244,232,.55)');
+    st.setProperty('--tint',   light ? 'rgba(11,8,18,.05)'  : 'rgba(255,244,232,.07)');
+    room.classList.toggle('lightRoom', light);
+    /* ── THE SCREEN'S INK IS DERIVED, NOT PICKED ──
+       Straight from src/lib/ink.ts at build time, per room and per surface. A
+       light/dark switch was only ever an approximation of this: the app rotates
+       the ink away from the wall's own hue and then raises lightness until the
+       pair clears 4.5:1, which is why Paris and Venice get different inks
+       despite both being pale.
+
+       Two surfaces, two inks — the wall carries the clock and the heart, the
+       floor carries the tabs, and they are rarely the same colour. And the love
+       rose is TINTED rather than replaced: on the Moon it stays exactly itself,
+       on a pale sky it darkens just enough to read. */
+    st.setProperty('--dInk', v.inkWall);
+    st.setProperty('--dInkFloor', v.inkFloor);
+    st.setProperty('--love', v.love);
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute('content', v.wallColor);
+  }
+  /* Sizing is separate from loading: the first pet is already in the markup, so
+     at start-up it needs its measurements without having its sources rewritten
+     and its playback restarted. */
+  /* ── EVERY PET THE SAME SIZE ──
+     Sized so the ANIMAL matches, not the file. Each clip is measured at build
+     time (see fits.json): the visible box fills 85% of Carrot's canvas and about
+     79% of the cats', so sizing by the catalogue's scale alone left him a quarter
+     taller than the rest.
+
+     So a target visible height is picked and each canvas is scaled to hit it.
+     The feet then land on one line because the measured visBottom says where
+     they are, and the animal is centred on the mat by its measured middle rather
+     than by its canvas. */
+  var PET_VIS_H = 13.05;  // visible height, % of the screen's height
+  var PAW_Y     = 80.3;   // where every pet's feet meet the mat
+  var SCREEN_WH = 540 / 1174;
+
+  function sizePet(id){
+    var f = FIT[id], st = room.style;
+    var canvasH = PET_VIS_H / f.vh;                 // % of screen height
+    var w       = canvasH * f.asp / SCREEN_WH;      // % of screen width
+    st.setProperty('--dPetW', w.toFixed(2) + '%');
+    /* Bottom of the CANVAS, placed so the measured feet sit on PAW_Y. */
+    st.setProperty('--dPetBottom', (100 - PAW_Y - canvasH * (1 - f.vb)).toFixed(2) + '%');
+    /* ── CENTRED ON THE BODY, NOT THE BOUNDING BOX ──
+       Centring the visible box put the TAIL in the middle of the mat: Carrot's
+       sticks well out to one side, so the box's centre is nowhere near his.
+
+       catalog.ts already answers this. Its nudge value exists for this reason —
+       it is the offset that puts each animal's BODY on the centre line, hand-set
+       per pet, and it is what the app itself places them with. Measuring the
+       alpha was the wrong instrument: it can only find the extent of the art,
+       not which part of it is the animal. */
+    st.setProperty('--dPetNudge', (w * f.nudge).toFixed(2) + '%');
+    var matH = 61.63 * (115 / 265) * SCREEN_WH;
+    st.setProperty('--dMatBottom', (100 - PAW_Y - matH / 2).toFixed(2) + '%');
+  }
+
+  function applyPet(id){
+    sizePet(id);
+    /* Both <source> elements are rewritten and the element reloaded. Setting
+       .src alone leaves the old source list in place and nothing changes. */
+    document.getElementById('demoPetHevc').src = 'demo/pet/' + id + '.mp4';
+    document.getElementById('demoPetWebm').src = 'demo/pet/' + id + '.webm';
+    pet.load();
+    var q = pet.play(); if (q && q.catch) q.catch(function(){});
+  }
+  var FIT = {"carrot":{"asp":1.15116,"vh":0.85174,"vb":0.89535,"nudge":0.08081,"m":{"settle":2.6,"asleep":4.9,"waking":7.3,"end":9.68}},"billie":{"asp":1.77778,"vh":0.78148,"vb":0.9037,"nudge":0.04583,"m":{"settle":2.6,"asleep":7.56,"waking":9.96,"end":14.92}},"maple":{"asp":1.77778,"vh":0.78889,"vb":0.90741,"nudge":-0.02708,"m":{"settle":2.6,"asleep":7.56,"waking":9.96,"end":14.92}},"mochi":{"asp":1.77778,"vh":0.79259,"vb":0.88148,"nudge":0.04063,"m":{"settle":2.6,"asleep":7.56,"waking":9.96,"end":14.92}}};
+  var PETS = ['carrot','billie','maple','mochi'];
+  var PET_NAMES = {carrot:'Carrot',billie:'Billie',maple:'Maple',mochi:'Mochi'};
+  var IDS = Object.keys(ROOMS);
+  var lastRoom = 'moon', lastPet = 'carrot';
+
+  /* Never hand back what is already on screen: a shuffle button that appears
+     to do nothing is worse than no button. */
+  function other(list, current){
+    var pool = list.filter(function(x){ return x !== current; });
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function shuffle(){
+    lastRoom = other(IDS, lastRoom);
+    lastPet  = other(PETS, lastPet);
+    applyRoom(lastRoom);
+    applyPet(lastPet);
+    label();
+  }
+
+  var roomName = document.getElementById('roomName');
+  var petName  = document.getElementById('petName');
+  function label(){
+    if (roomName) roomName.textContent = ROOMS[lastRoom].n;
+    if (petName)  petName.textContent  = PET_NAMES[lastPet];
+  }
+  function stepBy(list, cur, dir){
+    var i = list.indexOf(cur);
+    return list[(i + dir + list.length) % list.length];
+  }
+  [].slice.call(document.querySelectorAll('[data-step]')).forEach(function(b){
+    b.addEventListener('click', function(){
+      var dir = Number(b.dataset.dir);
+      if (b.dataset.step === 'room') { lastRoom = stepBy(IDS, lastRoom, dir); applyRoom(lastRoom); }
+      else { lastPet = stepBy(PETS, lastPet, dir); applyPet(lastPet); }
+      label();
+    });
+  });
+
+  var shuffleBtn = document.getElementById('tryAgain');
+  if (shuffleBtn) shuffleBtn.addEventListener('click', shuffle);
+
+  /* ── ONE ROOM PER GESTURE ──
+     A trackpad flick is not one event. It is a burst followed by a momentum
+     tail that can run for a second or more, easily fifty events in all, so a
+     plain cooldown lets one flick walk through several rooms.
+
+     Two gates, and it needs both. A GAP since the last event means a new
+     gesture has started, which is what separates a fresh flick from the tail of
+     the previous one. A CAP is the safety net: held-down scrolling never goes
+     quiet, and gating on the gap alone left the page stuck until the pointer
+     moved and the momentum expired on its own. That was the bug.
+
+     So: fire on the first event of a burst, and if somebody simply keeps
+     scrolling, advance at most once a second rather than not at all. */
+  var wheelPrev = 0;    // when the last wheel event of any kind arrived
+  var wheelFired = 0;   // when a room change was last triggered
+  var wheelPeak = 0;    // strongest push seen in the burst so far
+  var GAP = 160, CAP = 2600;
+  window.addEventListener('wheel', function(e){
+    if (window.innerWidth < 900) return;
+    var mag = Math.abs(e.deltaY);
+    if (mag < 4) return;
+    var now = Date.now();
+
+    /* A pause means the hand left and came back: unambiguously a new gesture. */
+    var paused = now - wheelPrev > GAP;
+    if (paused) wheelPeak = 0;
+
+    /* Momentum only ever DECAYS. So a push that climbs back above a good
+       fraction of the burst's peak, after having fallen well below it, is the
+       hand again rather than the tail — which is how a second deliberate flick
+       is told apart from the first one still coasting. */
+    var revived = wheelPeak > 0 && mag > wheelPeak * 0.65 && now - wheelFired > 320;
+    if (mag > wheelPeak) wheelPeak = mag;
+
+    /* Backstop for held scrolling, which never pauses and never decays. Long
+       enough that no single flick's tail can reach it — at 1000ms a fast flick
+       was still coasting and changed a second room. */
+    var stalled = now - wheelFired > CAP;
+
+    wheelPrev = now;
+    if (!paused && !revived && !stalled) return;
+    wheelFired = now;
+    wheelPeak = mag;
+    var i = IDS.indexOf(lastRoom);
+    lastRoom = IDS[(i + (e.deltaY > 0 ? 1 : IDS.length - 1)) % IDS.length];
+    applyRoom(lastRoom);
+    /* The stepper is the only thing telling you where you are, so it has to
+       follow every route that changes the room — the wheel included. */
+    label();
+  }, { passive: true });
+
+  /* ── THE CLOCK FOLLOWS THE PET ──
+     These are one story, not two animations sharing a screen: the alarm is set
+     and the pet settles, it sleeps while the alarm waits, then it wakes. On its
+     own timer the clock drifted against the pet and the screen read as two
+     unrelated loops — the pet asleep beside a clock saying no alarm was armed.
+
+     So the pet's own playhead drives it. Its phase boundaries are measured when
+     the clip is stitched, so this stays true if the clips are ever re-cut. */
+  var roll = document.getElementById('dRollInner');
+  var sub  = document.getElementById('dSub');
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var armed = null;
+
+  function beat(){
+    var m = FIT[lastPet] && FIT[lastPet].m;
+    if (!m || !pet.duration) return;
+    var t = pet.currentTime;
+    /* Armed from the moment it settles until it has woken. */
+    var on = t >= m.settle && t < m.waking;
+    /* The clock's posture IS the armed state, exactly as in the app. */
+    var scr = document.getElementById('demo');
+    if (scr) scr.classList.toggle('armed', on);
+    if (on === armed) return;
+    armed = on;
+    if (roll) roll.style.transform = on ? 'translateY(-50%)' : 'translateY(0)';
+    if (sub) {
+      sub.style.opacity = '0';
+      setTimeout(function(){
+        sub.textContent = on ? 'Rings in 7h 4m' : 'Rings every day';
+        sub.style.opacity = '';
+      }, 260);
+    }
+  }
+  if (!still) {
+    pet.addEventListener('timeupdate', beat);
+    pet.addEventListener('seeked', beat);
+  }
+
+  applyRoom('moon');
+  sizePet('carrot');
+})();
+</script>
+<script>
 /* ── THE WAITLIST ──
 
    One field, two checkboxes, one button. The checkboxes are the same two
@@ -952,7 +1607,12 @@ body.docpage{background:var(--paper);color:var(--dark)}
 
     room.style.setProperty("--horizon", h.y + "px");
     // The scale the room art is drawn at, so page and phone textures match.
-    room.style.setProperty("--roomW", h.w + "px");
+    /* ROUNDED to whole pixels. The measured width is fractional, and every
+       tile boundary then lands on a fraction: the browser antialiases the
+       join and leaves a hairline down the floor at each repeat. Whole
+       pixels put the seam on a pixel edge, where there is nothing to
+       blend. */
+    room.style.setProperty("--roomW", Math.round(h.w) + "px");
 
     /* ── THE ONE LINE THAT CAN LAND ON EITHER GROUND ──
 
@@ -1120,11 +1780,18 @@ body.docpage{background:var(--paper);color:var(--dark)}
      without touching the page, and that is exactly what happened — it used to
      push onto the OneSignal SDK's callback queue.
 
-     The endpoint holds the REST key and creates the email subscription with
-     two tags, wants_ios and wants_android. Two flags, never one 'platform'
-     field: somebody who ticks Android months after iOS must be ADDED to the
-     second list, not moved off the first, and a single field would overwrite
-     and silently un-enrol them from the launch they originally asked about. */
+     The endpoint holds the database key and writes the row through
+     waitlist_subscribe(), with two flags, wants_ios and wants_android. Two
+     flags, never one 'platform' field: somebody who ticks Android months after
+     iOS must be ADDED to the second list, not moved off the first, and a single
+     field would overwrite and silently un-enrol them from the launch they
+     originally asked about. The merge rule lives in the function, not here.
+
+     It used to be OneSignal, and this comment used to say so. Sending is now a
+     separate decision made at send time by tools/launch-email/send.mjs, which
+     can post through either Resend or OneSignal. Nothing on this page changes
+     either way, which was the point of writing subscribe() as the one function
+     that talks to the outside world. */
   function subscribe(email, wantsIos, wantsAndroid){
     var done = false;
     return new Promise(function(resolve, reject){
