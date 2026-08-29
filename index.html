@@ -283,9 +283,9 @@ a{color:inherit}
    The three dots on the right are the app's own control. Leaving them out made
    the screen look like a mockup of the app rather than the app. */
 .dLove{position:absolute;left:7.3%;top:3.6%;display:flex;align-items:center;
-  gap:calc(var(--dS) * .34);color:var(--love);font-size:calc(var(--dS) * .78)}
+  gap:calc(var(--dS) * .34);color:var(--love,#E79BC4);font-size:calc(var(--dS) * .78)}
 .dLove svg{width:calc(var(--dS) * .86);height:calc(var(--dS) * .86)}
-.dMenu{position:absolute;right:11%;top:4.2%;color:var(--love);opacity:.9}
+.dMenu{position:absolute;right:11%;top:4.2%;color:var(--love,#E79BC4);opacity:.9}
 .dMenu svg{width:calc(var(--dS) * .74);height:calc(var(--dS) * .74)}
 .dClock{position:absolute;left:40%;right:7%;top:13.6%;
   display:flex;align-items:center;justify-content:center;gap:.16em;
@@ -298,14 +298,14 @@ a{color:inherit}
      hollow so it belongs to the wall rather than to the UI. Filling it in made
      the clock the loudest thing on the screen, which is the opposite of what
      that decision is for. Transparent centre, stroked edge. */
-  color:transparent;-webkit-text-stroke:calc(var(--dS) * .05) var(--love);
+  color:transparent;-webkit-text-stroke:calc(var(--dS) * .05) var(--love,#E79BC4);
   letter-spacing:.03em;font-variant-numeric:tabular-nums}
 .dSub{position:absolute;left:40%;right:7%;top:22.0%;text-align:center;
   font-size:calc(var(--dS) * .72);opacity:.86}
 /* The mission chip. The recording had it and it is not decoration: it is the
    line that says the alarm has a task attached, which is the product. */
 .dChip{position:absolute;left:40%;right:7%;top:25.4%;text-align:center;opacity:1;
-  color:var(--love)}
+  color:var(--love,#E79BC4)}
 /* ── THE APP'S OWN CHALK, NOT A LINE THAT IMITATES IT ──
    Three vector attempts failed and they failed for one reason: chalk is GRAIN.
    It has a textured edge, uneven opacity and places the stick skipped, and no
@@ -319,33 +319,26 @@ a{color:inherit}
 
    80x25pt against a 430pt screen, its own aspect kept. */
 .dChip{position:absolute;left:38%;right:11%;top:25.4%}
-/* ── MASKED, SO IT TAKES THE ROOM'S INK ──
-   As a background image it wore whatever colour was painted into the file, and
-   stayed that colour in every room while the clock and the heart beside it
-   changed. The artwork carries alpha, so it is used as a MASK instead and the
-   colour comes from --love — the same derived rose everything else on the wall
-   uses. One file, nine inks, and it cannot fall out of step.
+/* ── MASKED AGAIN, NOW THAT IT IS SAFE TO BE ──
+   Masking was never the fault. The signup form has masked Apple and Android
+   glyphs that have always rendered, so the browser was fine with it. What broke
+   the chip was background-color:var(--love) with NO FALLBACK: --love is set by
+   applyRoom in script, and an unset custom property makes the declaration
+   invalid, so the box went transparent while every element painted with a
+   literal colour carried on. One missing element, everything else intact —
+   which is exactly the symptom, and exactly what I misread as a mask problem
+   three times.
 
-   Sized against the line above rather than against the app's own 21%: a baked
-   word cannot scale independently of its frame the way live text does, and this
-   phone is a third of a real screen, so matching the number left it visibly
-   smaller than its neighbour. */
-.dChip::after{content:"";display:block;width:33%;margin:0 auto;aspect-ratio:240/75;
-  background-color:var(--love);
-  /* Longhands, not the shorthand. The shorthand form with a slash-separated
-     size is rejected outright by some parsers, and a dropped mask on a filled
-     box leaves a solid rectangle rather than a chip. Longhands degrade one
-     property at a time. */
+   The fallback makes the colour always valid, so the mask can come back and
+   bring the per-room ink with it. Larger, too: at 33% it still read small
+   against the line above. */
+.dChip::after{content:"";display:block;width:42%;margin:0 auto;aspect-ratio:240/75;
+  background-color:var(--love,#E79BC4);
   -webkit-mask-image:url(demo/item/mission-ring.png);
   mask-image:url(demo/item/mission-ring.png);
   -webkit-mask-size:100% 100%; mask-size:100% 100%;
   -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
   -webkit-mask-position:center; mask-position:center}
-/* And if masking is unavailable entirely, fall back to painting the artwork
-   itself — its own colours, but present, which beats an empty space. */
-@supports not (mask-image: url(x.png)){
-  .dChip::after{background:url(demo/item/mission-ring.png) center/100% 100% no-repeat}
-}
 /* ── THE CLOCK MOVES ──
    The recording's whole point was that you watch an alarm being set. A still
    clock makes the phone look like a screenshot, so the minutes roll and the
