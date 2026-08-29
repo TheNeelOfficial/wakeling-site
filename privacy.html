@@ -319,26 +319,19 @@ a{color:inherit}
 
    80x25pt against a 430pt screen, its own aspect kept. */
 .dChip{position:absolute;left:38%;right:11%;top:25.4%}
-/* ── MASKED AGAIN, NOW THAT IT IS SAFE TO BE ──
-   Masking was never the fault. The signup form has masked Apple and Android
-   glyphs that have always rendered, so the browser was fine with it. What broke
-   the chip was background-color:var(--love) with NO FALLBACK: --love is set by
-   applyRoom in script, and an unset custom property makes the declaration
-   invalid, so the box went transparent while every element painted with a
-   literal colour carried on. One missing element, everything else intact —
-   which is exactly the symptom, and exactly what I misread as a mask problem
-   three times.
+/* ── NO MASK. THE INK IS BAKED IN. ──
+   This chip has been masked, unmasked and masked again, and it went invisible in
+   the one browser that mattered every time it was masked. I could not reproduce
+   it — headless Chrome rendered every version — and four fixes shipped on theory
+   is three too many.
 
-   The fallback makes the colour always valid, so the mask can come back and
-   bring the per-room ink with it. Larger, too: at 33% it still read small
-   against the line above. */
+   So the colour is baked at build time instead: the artwork's alpha refilled
+   with each room's derived ink, nine rooms, eighteen ordinary PNGs. A plain
+   background image has no support query, no decode path and no custom property
+   between it and being drawn. The room still changes it; the browser just has
+   nothing left to disagree with. */
 .dChip::after{content:"";display:block;width:42%;margin:0 auto;aspect-ratio:240/75;
-  background-color:var(--love,#E79BC4);
-  -webkit-mask-image:url(demo/item/mission-ring.png);
-  mask-image:url(demo/item/mission-ring.png);
-  -webkit-mask-size:100% 100%; mask-size:100% 100%;
-  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
-  -webkit-mask-position:center; mask-position:center}
+  background:var(--dChipImg) center/100% 100% no-repeat}
 /* ── THE CLOCK MOVES ──
    The recording's whole point was that you watch an alarm being set. A still
    clock makes the phone look like a screenshot, so the minutes roll and the
