@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-itunes-app" content="app-id=6799813681">
 <meta name="theme-color" content="#0D1325">
 <title>Wakeling — the alarm that goes quiet when you get up</title>
 <meta name="description" content="Wakeling is an un-snoozable motion alarm for iOS. It goes quiet while you are moving, so the fastest way to stop it is to get up. A chalk-drawn pet wakes with you. The alarm is free forever.">
@@ -912,6 +913,11 @@ h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
    removes it from the tab order and from pointer events exactly as display:none
    did, but the space it occupied stays occupied, so nothing above it moves. */
 .signup{position:relative} 
+.download{display:flex;flex-direction:column;align-items:center;gap:10px}
+.download .appstore{display:inline-block;line-height:0;border-radius:12px}
+.download .appstore img{height:60px;width:auto}
+.download .appstore:focus-visible{outline:3px solid #000;outline-offset:4px}
+
 /* The hint goes too. It carries transient state — "Signing you up…" is set
    just before the request and never cleared on success, because success is a
    different element appearing. Without this the thank-you renders with
@@ -1140,31 +1146,11 @@ body.docpage{background:var(--paper);color:var(--dark)}
            than a sentence, and the stop made it read as one more thing being
            explained. Everything else keeps its punctuation. -->
       <p class="free">The alarm is free forever, and always will be</p>
-      <div class="signup" id="signup">
-      <form class="cta" id="notifyForm" novalidate>
-        <input type="email" name="email" id="notifyEmail" required autocomplete="email"
-               placeholder="you@example.com" aria-label="Email address"
-               aria-describedby="notifyNote">
-        <input type="text" name="hp" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <p class="ask" id="picksAsk">Email me when it launches on</p>
-        <div class="picks" role="group" aria-labelledby="picksAsk">
-          <label><input type="checkbox" name="ios" checked>
-            <span class="glyph ios" aria-hidden="true"></span> iOS</label>
-          <label><input type="checkbox" name="android">
-            <span class="glyph android" aria-hidden="true"></span> Android</label>
-        </div>
-        <button type="submit">Tell me when it is out</button>
-      </form>
-      <p class="hint" id="notifyHint" role="status" aria-live="polite"></p>
-      <!-- Two lines again.
-           It was collapsed to one to buy vertical space on a short laptop,
-           which worked and cost something worse: as a single run it was the
-           widest thing in the column, so it set the column's width and pulled
-           the whole group off centre against the prose above it. Height is
-           bought elsewhere now. -->
-      <p class="soon" id="notifyNote">iOS first, Android later.<br>One email
-      when yours is ready, nothing else, and you can unsubscribe.</p>
-      <p class="done">Thank you — we will email you when it is ready.</p>
+      <div class="signup download" id="signup">
+      <a class="appstore" href="https://apps.apple.com/app/id6799813681" aria-label="Download Wakeling on the App Store">
+        <img src="appstore-badge.svg" alt="Download on the App Store" width="200" height="67">
+      </a>
+      <p class="soon">Free on iPhone. Android later.</p>
       </div>
     </div>
   </div>

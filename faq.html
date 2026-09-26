@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-itunes-app" content="app-id=6799813681">
 <meta name="theme-color" content="#FBF6EF">
 <title>FAQs — Wakeling</title>
 <meta name="description" content="Common questions about Wakeling: the no-snooze alarm, the missions, your pet, and what is free.">
@@ -912,6 +913,11 @@ h1{font-size:clamp(3.4rem,9vw,5.6rem);line-height:.95;margin:0;font-weight:700;
    removes it from the tab order and from pointer events exactly as display:none
    did, but the space it occupied stays occupied, so nothing above it moves. */
 .signup{position:relative} 
+.download{display:flex;flex-direction:column;align-items:center;gap:10px}
+.download .appstore{display:inline-block;line-height:0;border-radius:12px}
+.download .appstore img{height:60px;width:auto}
+.download .appstore:focus-visible{outline:3px solid #000;outline-offset:4px}
+
 /* The hint goes too. It carries transient state — "Signing you up…" is set
    just before the request and never cleared on success, because success is a
    different element appearing. Without this the thank-you renders with
